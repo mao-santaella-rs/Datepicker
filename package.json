@@ -1,0 +1,36 @@
+{
+  "name": "datepicker",
+  "version": "0.0.1",
+  "description": "Calendar datepicker",
+  "author": "Mao Santaella - mao8a87@gmail.com",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "readme": "../README.md",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.3.3",
+    "@babel/preset-env": "^7.3.1",
+    "babel-loader": "^8.0.5",
+    "browser-sync": "^2.26.3",
+    "css-loader": "^2.1.0",
+    "eslint": "^5.14.0",
+    "gulp": "^4.0.0",
+    "gulp-plumber": "^1.2.1",
+    "node-sass": "^4.11.0",
+    "pug": "^2.0.3",
+    "pug-plain-loader": "^1.0.0",
+    "sass-loader": "^7.1.0",
+    "vue": "^2.6.6",
+    "vue-loader": "^15.6.2",
+    "vue-style-loader": "^4.1.2",
+    "vue-template-compiler": "^2.6.6",
+    "webpack": "^4.29.4",
+    "webpack-cli": "^3.2.3",
+    "webpack-stream": "^5.2.1"
+  },
+  "browser": {
+    "vue": "vue/dist/vue.common.js"
+  }
+}
