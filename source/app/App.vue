@@ -5,8 +5,8 @@
 			span {{dates.firstDate}} to {{dates.lastDate}}
 
 		Datepicker(
-			min-date="07-05-2016"
-			max-date="07-25-2021"
+			min-date="12-05-2016"
+			max-date="03-25-2021"
 			:date-one="dates.firstDate"
 			:date-two="dates.lastDate"
 			:months-to-show="panels"

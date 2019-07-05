@@ -63,7 +63,7 @@ export default {
     },
     monthsForSelect: {
       type: Number,
-      default: 10
+      default: 24
     },
     minDate: {
       type: String,
@@ -114,8 +114,8 @@ export default {
         
       } else if (isBefore(date, this.computedDateOne)) {
 
-        if (this.maxRangeDays > 0 && differenceInDays(this.computedDateOne,date) > this.maxRangeDays){
-          this.$emit('update:dateTwo', format(addDays(date,this.maxRangeDays), "MM-DD-YYYY"))
+        if (this.maxRangeDays > 0 && differenceInDays(this.computedDateOne,date) > this.maxRangeDays -1){
+          this.$emit('update:dateTwo', format(addDays(date,this.maxRangeDays-1), "MM-DD-YYYY"))
         } else {
           this.$emit('update:dateTwo', this.dateOne)
         }
@@ -125,8 +125,8 @@ export default {
       } else {
         this.$emit('update:dateTwo', format(date, "MM-DD-YYYY"))
         
-        if (this.maxRangeDays > 0 && differenceInDays(date,this.computedDateOne) > this.maxRangeDays){
-          this.$emit('update:dateOne', format(subDays(date,this.maxRangeDays), "MM-DD-YYYY"))
+        if (this.maxRangeDays > 0 && differenceInDays(date,this.computedDateOne) > this.maxRangeDays -1){
+          this.$emit('update:dateOne', format(subDays(date,this.maxRangeDays-1), "MM-DD-YYYY"))
         }
 
         this.selectionCount = 1
