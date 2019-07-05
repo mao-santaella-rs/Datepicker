@@ -34,6 +34,7 @@
 
 <script>
 const differenceInCalendarMonths = require("date-fns/difference_in_calendar_months")
+const differenceInDays = require('date-fns/difference_in_calendar_days')
 const getYear = require("date-fns/get_year")
 const getDay = require("date-fns/get_day")
 const getDaysInMonth = require("date-fns/get_days_in_month")
@@ -42,7 +43,9 @@ const isWithinRange = require("date-fns/is_within_range")
 const isDate = require("date-fns/is_date")
 const isBefore = require("date-fns/is_before")
 const isAfter = require("date-fns/is_after")
+const addDays = require('date-fns/add_days')
 const addMonths = require("date-fns/add_months")
+const subDays = require('date-fns/sub_days')
 const subMonths = require("date-fns/sub_months")
 const getMonth = require("date-fns/get_month")
 const format = require("date-fns/format")
@@ -80,7 +83,13 @@ export default {
       type: Number,
       default: 1
     },
-    maxRangeDays: [String, Number],
+    maxRangeDays: {
+      type: Number,
+      default: 0,
+      validator: function (val) {
+        return val > 5 || val === 0
+      }
+    },
     open: Boolean
   },
   data() {
@@ -97,16 +106,29 @@ export default {
   },
   methods: {
     dayClick(date) {
+
       if (this.selectionCount === 1) {
         this.$emit('update:dateOne', format(date, "MM-DD-YYYY"))
         this.$emit('update:dateTwo', '')
         this.selectionCount = 2
+        
       } else if (isBefore(date, this.computedDateOne)) {
-        this.$emit('update:dateTwo', this.dateOne)
+
+        if (this.maxRangeDays > 0 && differenceInDays(this.computedDateOne,date) > this.maxRangeDays){
+          this.$emit('update:dateTwo', format(addDays(date,this.maxRangeDays), "MM-DD-YYYY"))
+        } else {
+          this.$emit('update:dateTwo', this.dateOne)
+        }
+
         this.$emit('update:dateOne', format(date, "MM-DD-YYYY"))
         this.selectionCount = 1
       } else {
         this.$emit('update:dateTwo', format(date, "MM-DD-YYYY"))
+        
+        if (this.maxRangeDays > 0 && differenceInDays(date,this.computedDateOne) > this.maxRangeDays){
+          this.$emit('update:dateOne', format(subDays(date,this.maxRangeDays), "MM-DD-YYYY"))
+        }
+
         this.selectionCount = 1
       }
     },
@@ -215,22 +237,12 @@ export default {
 </script>
 
 <style lang="sass">
-body
-  padding: 50px 
-
-
 .datepicker__btn
   color: #808080
-  padding: 0
-  background-color: transparent
   
   &:hover, &:focus
     background-color: #e6e6e6
     color: #808080
-    outline: none
-
-  
-
 
 .datepicker
   font-size: 12px
@@ -333,9 +345,7 @@ body
   width: 35px
   height: 35px
   border: 1px solid #e6e6e6
-  background-color: transparent
   color: #808080
-  padding: 0
   position: absolute
   top: 15px
 

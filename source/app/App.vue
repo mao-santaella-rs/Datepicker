@@ -10,6 +10,7 @@
 			:date-one="dates.firstDate"
 			:date-two="dates.lastDate"
 			:months-to-show="panels"
+			:max-range-days="10"
 			@update:dateOne="val => dates.firstDate = val"
 			@update:dateTwo="val => dates.lastDate = val"
 		)
@@ -43,5 +44,13 @@ export default {
 </script>
 
 <style lang="sass">
+body
+  padding: 50px
 
+button
+	padding: 0
+	border-radius: 0
+	background-color: #fff
+	&:hover, &:focus
+    outline: none
 </style>
