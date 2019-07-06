@@ -1,34 +1,34 @@
 <template lang="pug">
-.datepicker(
-  :class="{'datepicker--two-panels' : monthsToShow === 2}"
-)
+.datepicker__container
+  .datepicker(
+    :class="{'datepicker--open' : open,'datepicker--two-panels' : monthsToShow === 2}"
+  )
+    .datepicker__content
+      .datepicker__month-container(
+        :class="{'datepicker__month-container--transition' : offset !== null}"
+        :style="{transform : 'translate('+computedOffset+'px,0)'}"
+      )
+        .datepicker__month(v-for="month in calendar")
+          .datepicker__month__name
+            span {{months[month.month]}} {{month.year}}
+            
+          .datepicker__month__weekdays
+            .datepicker__day-title(v-for="day in days") {{day}}
 
-  .datepicker__content
+          .datepicker__month__calendar
+            button.datepicker__day.datepicker__btn(
+              v-for="day in month.days"
+              :class="dayStyles(day.date,day.number)",
+              @click="dayClick(day.date)"
+            ) 
+              span {{day.number}}
 
-    .datepicker__month-container(
-      :class="{'datepicker__month-container--transition' : offset !== null}"
-      :style="{transform : 'translate('+computedOffset+'px,0)'}"
-    )
-      .datepicker__month(v-for="month in calendar")
-        .datepicker__month__name
-          span {{months[month.month]}} {{month.year}}
-        .datepicker__month__weekdays
-          .datepicker__day-title(v-for="day in days") {{day}}
+      .datepicker__controls
+        button.datepicker__controls__prev.datepicker__btn(@click="offset--") <
+        button.datepicker__controls__next.datepicker__btn(@click="offset++") >
 
-        .datepicker__month__calendar
-          button.datepicker__day.datepicker__btn(
-            v-for="day in month.days"
-            :class="dayStyles(day.date,day.number)",
-            @click="dayClick(day.date)"
-          ) 
-            span {{day.number}}
-
-    .datepicker__controls
-      button.datepicker__controls__prev.datepicker__btn(@click="offset--") <
-      button.datepicker__controls__next.datepicker__btn(@click="offset++") >
-
-  .datepicker__footer
-    //- span {{computedMinDate}}
+    .datepicker__footer
+      //- span {{computedMinDate}}
 
 </template>
 
@@ -90,7 +90,10 @@ export default {
         return val > 5 || val === 0
       }
     },
-    open: Boolean
+    open: {
+      type: Boolean,
+      default: false
+    }
   },
   data() {
     return {
@@ -134,10 +137,10 @@ export default {
     },
     dayStyles(date, day) {
       const isBeforeMinDay = this.computedMinDate
-        ? isBefore(date, this.computedMinDate) || isSameDay(date, this.computedMinDate)
+        ? isBefore(date, this.computedMinDate)
         : false
       const isAfterMaxDay = this.computedMaxDate
-        ? isAfter(date, this.computedMaxDate) || isSameDay(date, this.computedMaxDate)
+        ? isAfter(date, this.computedMaxDate)
         : false
       const isDisabledDay = this.disabledDays.length
         ? this.disabledDays.some(val => isSameDay(date, this.getDateFromString(val)))
@@ -239,15 +242,28 @@ export default {
 <style lang="sass">
 .datepicker__btn
   color: #808080
-  
   &:hover, &:focus
     background-color: #e6e6e6
     color: #808080
+
+.datepicker__container
+  position: relative
 
 .datepicker
   font-size: 12px
   border: 1px solid #e6e6e6
   max-width: 300px
+  background-color: #fff
+  position: absolute
+  top: 0
+  left: 0
+  opacity: 0
+  pointer-events: none
+  transition: opacity 0.2s ease-in-out
+
+.datepicker--open
+  opacity: 1
+  pointer-events: initial
 
 .datepicker--two-panels
   max-width: 600px
@@ -297,10 +313,10 @@ export default {
   border: 1px solid #e6e6e6
   border-left: none
   border-top: none
-  &:nth-child(7n+1):not(.datepicker__day--null-day)
+  &:nth-child(7n+1):not(.datepicker__day--null)
     border-left: 1px solid #e6e6e6
   @for $i from 1 through 7
-    &:nth-child(#{$i}):not(.datepicker__day--null-day)
+    &:nth-child(#{$i}):not(.datepicker__day--null)
       border-top: 1px solid #e6e6e6
   
   
