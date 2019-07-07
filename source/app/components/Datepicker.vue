@@ -112,6 +112,9 @@ export default {
     this.panelDate = new Date(getYear(this.today), getMonth(this.today))
     this.$refs.container.addEventListener(this.whichTransitionEvent(), this.afterTransition)
   },
+  beforeDestroy() {
+    this.$refs.container.removeEventListener(this.whichTransitionEvent(), this.afterTransition)
+  },
   methods: {
     dayClick(date) {
 
