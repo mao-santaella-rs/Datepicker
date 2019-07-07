@@ -46,7 +46,6 @@ export default {
 <style lang="sass">
 body
   padding: 50px
-  background-color: gray
 
 button
   padding: 0

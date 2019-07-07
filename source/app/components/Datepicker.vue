@@ -9,7 +9,9 @@
         :class="{'datepicker--move-left' : panelMove === 'left','datepicker--move-right' : panelMove === 'right'}"
       )
         .datepicker__month(v-for="month in calendar")
-          .datepicker__month__name
+          a.datepicker__month__name(
+            @click="monthSelectOpen = true"
+          )
             span {{months[month.month]}} {{month.year}}
 
           .datepicker__month__weekdays
@@ -29,6 +31,30 @@
 
       button.datepicker__controls__prev.datepicker__btn(@click="panelMove = 'left'") <
       button.datepicker__controls__next.datepicker__btn(@click="panelMove = 'right'") >
+    
+    .datepicker__monthpicker(v-if="monthSelectOpen")
+      .datepicker__monthpicker__header
+        a.datepicker__monthpicker__year(
+          @click="yearSelectOpen = true"
+        )
+          span {{computedPanelDate.year}}
+
+      .datepicker__monthpicker__content
+        button.datepicker__btn(
+          v-for="(month,index) in months"
+          @click="monthClick(index)"
+          :class="{'datepicker__day--today' : index === computedPanelDate.month}"
+          :key="'month-'+month"
+        ) {{month}}
+
+    .datepicker__yearpicker(v-if="yearSelectOpen")
+      .datepicker__yearpicker__content
+        button.datepicker__btn(
+          v-for="year in yearsList"
+          :class="{'datepicker__day--today' : year === computedPanelDate.year}"
+          @click="yearClick(year)"
+          :key="'year-'+year"
+        ) {{year}}
 
     .datepicker__footer
 
@@ -104,7 +130,9 @@ export default {
       days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       selectionCount: 1,
       panelMove: '',
-      panelDate: null
+      panelDate: null,
+      monthSelectOpen: false,
+      yearSelectOpen: false
     }
   },
   mounted() {
@@ -162,27 +190,13 @@ export default {
         "datepicker__day--disabled": isBeforeMinDay || isAfterMaxDay || isDisabledDay
       }
     },
-    whichTransitionEvent(){
-      const transitions = {
-        "transition" : "transitionend",
-        "OTransition" : "oTransitionEnd",
-        "MozTransition" : "transitionend",
-        "WebkitTransition" : "webkitTransitionEnd"
-      }
-      for (let t in transitions){
-        if (this.$refs.container.style[t] !== undefined){
-          return transitions[t]
-        }
-      }
-		},
-    afterTransition(event){
-      if (event.propertyName !== "transform") return
-      if (this.panelMove === 'left'){
-        this.panelDate = subMonths(this.panelDate,1)
-      } else if (this.panelMove === 'right') {
-        this.panelDate = addMonths(this.panelDate,1)
-      }
-      this.panelMove = ''
+    monthClick(index){
+      this.panelDate = new Date(this.computedPanelDate.year,index)
+      this.monthSelectOpen = false
+    },
+    yearClick(year){
+      this.panelDate = new Date(year,this.computedPanelDate.month)
+      this.yearSelectOpen = false
     },
     buildMonth(date) {
       let year = getYear(date)
@@ -205,6 +219,28 @@ export default {
     getDateFromString(string) {
       let dateArr = string.split("-").map(el => Number(el))
       return new Date(dateArr[2], dateArr[0] - 1, dateArr[1])
+    },
+    whichTransitionEvent(){
+      const transitions = {
+        "transition" : "transitionend",
+        "OTransition" : "oTransitionEnd",
+        "MozTransition" : "transitionend",
+        "WebkitTransition" : "webkitTransitionEnd"
+      }
+      for (let t in transitions){
+        if (this.$refs.container.style[t] !== undefined){
+          return transitions[t]
+        }
+      }
+		},
+    afterTransition(event){
+      if (event.propertyName !== "transform") return
+      if (this.panelMove === 'left'){
+        this.panelDate = subMonths(this.panelDate,1)
+      } else if (this.panelMove === 'right') {
+        this.panelDate = addMonths(this.panelDate,1)
+      }
+      this.panelMove = ''
     }
   },
   computed: {
@@ -219,6 +255,20 @@ export default {
     },
     computedMaxDate() {
       return this.maxDate != '' ? this.getDateFromString(this.maxDate) : false
+    },
+    computedPanelDate() {
+      return {
+        year: getYear(this.panelDate),
+        month: getMonth(this.panelDate)
+      }
+    },
+    yearsList(){
+      const minYear = getYear(this.today) - 15
+      let yearList = []
+      for (let year = minYear; year <= minYear + 31; year++) {
+        yearList.push(year)
+      }
+      return yearList
     },
     calendar(){
       if (!this.today) return []
@@ -285,10 +335,13 @@ export default {
   flex: 0
 
 .datepicker__month__name
+  display: block
   text-align: center
-  margin-bottom: 20px
-  margin-top: 10px
+  padding-bottom: 20px
+  padding-top: 10px
+  cursor: pointer
   span
+    color: #808080
     font-size: 18px
     font-weight: 700
 
@@ -369,4 +422,72 @@ export default {
 .datepicker__controls__next
   right: 15px
 
+.datepicker__monthpicker
+  position: absolute
+  top: 0
+  bottom: 0
+  background-color: #fff
+  display: flex
+  flex-direction: column
+  justify-content: center
+
+.datepicker__monthpicker__header
+  display: flex
+  justify-content: center
+
+
+.datepicker__monthpicker__year
+  @extend .datepicker__month__name
+  padding-top: 0
+  padding-bottom: 20px
+  span
+    font-size: 22px
+
+.datepicker__monthpicker__content
+  display: flex
+  flex-wrap: wrap
+  .datepicker__btn
+    flex: 0 0 33.3333%
+    padding: 20px 10px
+    border-left: 1px solid #e6e6e6
+    border-bottom: 1px solid #e6e6e6
+
+    &:nth-child(3n+1)
+      border-left: none
+    @for $i from 1 through 3
+      &:nth-child(#{$i})
+        border-top: 1px solid #e6e6e6
+
+.datepicker__yearpicker
+  @extend .datepicker__monthpicker
+  justify-content: flex-start
+  overflow: hidden
+  overflow-y: auto
+
+.datepicker__yearpicker__content
+  display: flex
+  flex-wrap: wrap
+  .datepicker__btn
+    flex: 0 0 25%
+    padding: 20px 0
+    border-left: 1px solid #e6e6e6
+    border-bottom: 1px solid #e6e6e6
+
+    &:nth-child(4n+1)
+      border-left: none
+    
+</style>
+
+<style lang="sass" scoped>
+::-webkit-scrollbar
+  width: 5px
+
+::-webkit-scrollbar-track 
+  background: #f1f1f1
+
+::-webkit-scrollbar-thumb
+  background: #888
+
+::-webkit-scrollbar-thumb:hover
+  background: #555
 </style>
