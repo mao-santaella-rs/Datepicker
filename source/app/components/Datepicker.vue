@@ -5,30 +5,32 @@
   )
     .datepicker__content
       .datepicker__month-container(
-        :class="{'datepicker__month-container--transition' : offset !== null}"
-        :style="{transform : 'translate('+computedOffset+'px,0)'}"
+        ref="container"
+        :class="{'datepicker--move-left' : panelMove === 'left','datepicker--move-right' : panelMove === 'right'}"
       )
         .datepicker__month(v-for="month in calendar")
           .datepicker__month__name
             span {{months[month.month]}} {{month.year}}
-            
+
           .datepicker__month__weekdays
             .datepicker__day-title(v-for="day in days") {{day}}
 
           .datepicker__month__calendar
+            .datepicker__day.datepicker__day--null(
+              v-for="nullDay in month.null"
+              :class="{'datepicker__day--last-null' : nullDay === month.null}"
+            )
             button.datepicker__day.datepicker__btn(
               v-for="day in month.days"
-              :class="dayStyles(day.date,day.number)",
+              :class="dayStyles(day.date)",
               @click="dayClick(day.date)"
             ) 
               span {{day.number}}
 
-      .datepicker__controls
-        button.datepicker__controls__prev.datepicker__btn(@click="offset--") <
-        button.datepicker__controls__next.datepicker__btn(@click="offset++") >
+      button.datepicker__controls__prev.datepicker__btn(@click="panelMove = 'left'") <
+      button.datepicker__controls__next.datepicker__btn(@click="panelMove = 'right'") >
 
     .datepicker__footer
-      //- span {{computedMinDate}}
 
 </template>
 
@@ -101,11 +103,14 @@ export default {
       months: ["January","February","March","April","May","June","July","August","September","October","November","December"],
       days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       selectionCount: 1,
-      offset: null
+      panelMove: '',
+      panelDate: null
     }
   },
   mounted() {
     this.today = new Date()
+    this.panelDate = new Date(getYear(this.today), getMonth(this.today))
+    this.$refs.container.addEventListener(this.whichTransitionEvent(), this.afterTransition)
   },
   methods: {
     dayClick(date) {
@@ -135,7 +140,7 @@ export default {
         this.selectionCount = 1
       }
     },
-    dayStyles(date, day) {
+    dayStyles(date) {
       const isBeforeMinDay = this.computedMinDate
         ? isBefore(date, this.computedMinDate)
         : false
@@ -146,8 +151,6 @@ export default {
         ? this.disabledDays.some(val => isSameDay(date, this.getDateFromString(val)))
         : false
       return {
-        "datepicker__day--null": day <= 0,
-        "datepicker__day--last-null": day < 0,
         "datepicker__day--today": isSameDay(date, this.today),
         "datepicker__day--selected": isSameDay(date, this.computedDateOne) || isSameDay(date, this.computedDateTwo),
         "datepicker__day--in-range": isDate(this.computedDateTwo)
@@ -156,27 +159,44 @@ export default {
         "datepicker__day--disabled": isBeforeMinDay || isAfterMaxDay || isDisabledDay
       }
     },
-    buildMonth(year, month) {
-      let days = []
-      const firstDay = new Date(year, month, 1)
-      //null days of the month
-      let firstWeekDay = getDay(firstDay)
-      for (let nullDay = 0; nullDay < firstWeekDay; nullDay++) {
-        days.push({
-          number: nullDay === firstWeekDay - 1 ? -1 : 0
-        })
+    whichTransitionEvent(){
+      const transitions = {
+        "transition" : "transitionend",
+        "OTransition" : "oTransitionEnd",
+        "MozTransition" : "transitionend",
+        "WebkitTransition" : "webkitTransitionEnd"
       }
-      // normal days of the month
-      for (let day = 1; day <= getDaysInMonth(firstDay); day++) {
+      for (let t in transitions){
+        if (this.$refs.container.style[t] !== undefined){
+          return transitions[t]
+        }
+      }
+		},
+    afterTransition(event){
+      if (event.propertyName !== "transform") return
+      if (this.panelMove === 'left'){
+        this.panelDate = subMonths(this.panelDate,1)
+      } else if (this.panelMove === 'right') {
+        this.panelDate = addMonths(this.panelDate,1)
+      }
+      this.panelMove = ''
+    },
+    buildMonth(date) {
+      let year = getYear(date)
+      let month = getMonth(date)
+      let days = []
+      
+      for (let day = 1; day <= getDaysInMonth(date); day++) {
         days.push({
           number: day,
-          date: new Date(year, month, day)
+          date: new Date(year,month,day)
         })
       }
       return {
         year: year,
         month: month,
-        days: days
+        days: days,
+        null: getDay(date)
       }
     },
     getDateFromString(string) {
@@ -197,43 +217,13 @@ export default {
     computedMaxDate() {
       return this.maxDate != '' ? this.getDateFromString(this.maxDate) : false
     },
-    computedOffset() {
-      // set the offset in the curren month
-      if (this.offset === null && this.calendar.length) {
-        this.offset = this.calendar.findIndex(calMonth => {
-          return (calMonth.year === getYear(this.today) && calMonth.month === getMonth(this.today))
-        })
-      }
-      if (this.offset < 0) 
-        this.offset = 0
-      else if (this.offset === this.calendar.length)
-        this.offset = this.calendar.length - 1
-      else if ( this.monthsToShow === 2 && this.offset === this.calendar.length - 1)
-        this.offset = this.calendar.length - 2
-      return this.offset * 300 * -1
-    },
-    calendar() {
+    calendar(){
       if (!this.today) return []
-
-      let minDate = subMonths(this.today, Number(this.monthsForSelect))
-      let maxDate = addMonths(this.today, Number(this.monthsForSelect))
-
-      // if minDate < than propMinDate set it to propMinDate
-      if (this.computedMinDate && isBefore(this.computedMinDate, minDate)) {
-        minDate = this.computedMinDate
+      let calendar = []
+      for (let date = subMonths(this.panelDate,1) ; !isSameDay(date,addMonths(this.panelDate,3)) ; date = addMonths(date,1)) {
+        calendar.push(this.buildMonth(date))
       }
-      // if maxDate > than propMaxDate set it to propMinDate
-      if (this.computedMaxDate && isAfter(this.computedMaxDate, maxDate)) {
-        maxDate = this.computedMaxDate
-      }
-
-      let calendarObj = []
-
-      for (let i = 0; i <= differenceInCalendarMonths(maxDate, minDate); i++) {
-        let pDate = addMonths(minDate, i)
-        calendarObj.push(this.buildMonth(getYear(pDate), getMonth(pDate)))
-      }
-      return calendarObj
+      return calendar
     }
   }
 }
@@ -242,6 +232,7 @@ export default {
 <style lang="sass">
 .datepicker__btn
   color: #808080
+  transition: none
   &:hover, &:focus
     background-color: #e6e6e6
     color: #808080
@@ -274,9 +265,16 @@ export default {
 
 .datepicker__month-container
   display: flex
+  transform: translate(-300px,0)
 
-.datepicker__month-container--transition
-  transition: transform 0.2s ease-in-out
+.datepicker--move-right, .datepicker--move-left
+  transition: transform 0.3s ease-in-out
+
+.datepicker--move-right
+  transform: translate(-600px,0)
+
+.datepicker--move-left
+  transform: translate(0,0)
 
 .datepicker__month
   min-width: 300px
@@ -318,8 +316,6 @@ export default {
   @for $i from 1 through 7
     &:nth-child(#{$i}):not(.datepicker__day--null)
       border-top: 1px solid #e6e6e6
-  
-  
 
 .datepicker__day--last-null
   border-right: 1px solid #e6e6e6 !important
@@ -353,7 +349,6 @@ export default {
   color: #dadada
   background-color: #fbfbfb
   pointer-events: none
-
 
 .datepicker__controls
 
