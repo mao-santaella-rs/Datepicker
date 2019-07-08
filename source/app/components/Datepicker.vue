@@ -1,6 +1,7 @@
 <template lang="pug">
 .datepicker__container
   .datepicker(
+    ref="datepicker"
     :class="{'datepicker--open' : open,'datepicker--two-panels' : monthsToShow === 2}"
   )
     .datepicker__content
@@ -61,7 +62,6 @@
 </template>
 
 <script>
-const differenceInCalendarMonths = require("date-fns/difference_in_calendar_months")
 const differenceInDays = require('date-fns/difference_in_calendar_days')
 const getYear = require("date-fns/get_year")
 const getDay = require("date-fns/get_day")
@@ -88,10 +88,6 @@ export default {
     dateTwo: {
       type: String,
       default: ''
-    },
-    monthsForSelect: {
-      type: Number,
-      default: 24
     },
     minDate: {
       type: String,
@@ -135,6 +131,15 @@ export default {
       yearSelectOpen: false
     }
   },
+  watch:{
+    open(val){
+      if(val){
+        document.addEventListener('mousedown', this.outsideClick)
+      } else {
+        document.removeEventListener('mousedown', this.outsideClick)
+      }
+    }
+  },
   mounted() {
     this.today = new Date()
     this.panelDate = new Date(getYear(this.today), getMonth(this.today))
@@ -144,6 +149,12 @@ export default {
     this.$refs.container.removeEventListener(this.whichTransitionEvent(), this.afterTransition)
   },
   methods: {
+
+    outsideClick(event) {
+      if (this.$refs.datepicker.contains(event.target)) return
+      this.$emit('close')
+      
+    },
     dayClick(date) {
 
       if (this.selectionCount === 1) {
