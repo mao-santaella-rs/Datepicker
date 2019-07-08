@@ -8,24 +8,32 @@
         ref="container"
         :class="{'datepicker--move-left' : panelMove === 'left','datepicker--move-right' : panelMove === 'right'}"
       )
-        .datepicker__month(v-for="month in calendar")
+        .datepicker__month(
+          v-for="month in calendar"
+          :key="`month-${month.month}`"
+        )
           a.datepicker__month__name(
             @click="monthSelectOpen = true"
           )
             span {{months[month.month]}} {{month.year}}
 
           .datepicker__month__weekdays
-            .datepicker__day-title(v-for="day in days") {{day}}
+            .datepicker__day-title(
+              v-for="day in days"
+              :key="`weekday-${day}`"
+            ) {{day}}
 
           .datepicker__month__calendar
             .datepicker__day.datepicker__day--null(
               v-for="nullDay in month.null"
               :class="{'datepicker__day--last-null' : nullDay === month.null}"
+              :key="`nullday-${nullDay}`"
             )
             button.datepicker__day.datepicker__btn(
               v-for="day in month.days"
               :class="dayStyles(day.date)",
               @click="() => dayClick(day.date)"
+              :key="`day-${month.month}-${day.number}`"
             ) 
               span {{day.number}}
 
@@ -44,7 +52,7 @@
           v-for="(month,index) in months"
           @click="() => monthClick(index)"
           :class="{'datepicker__day--today' : index === computedPanelDate.month}"
-          :key="'month-'+month"
+          :key="`month-${month}`"
         ) {{month}}
 
     .datepicker__yearpicker(v-if="yearSelectOpen")
@@ -53,7 +61,7 @@
           v-for="year in yearsList"
           :class="{'datepicker__day--today' : year === computedPanelDate.year}"
           @click="() => yearClick(year)"
-          :key="'year-'+year"
+          :key="`year-${year}`"
         ) {{year}}
 
     .datepicker__footer
@@ -99,10 +107,9 @@ export default {
       default: ""
     },
     disabledDays: {
-      // ['09-14-2018','09-15-2018']
       // TODO when is in between the selection?
       type: Array,
-      default: () => []
+      default: () => [] // ['09-14-2018','09-15-2018']
     },
     monthsToShow: {
       type: Number,
@@ -128,6 +135,8 @@ export default {
       selectionCount: 1,
       selectionDateOne: null,
       selectionDateTwo: null,
+      initialDateOne: null,
+      initialDateTwo: null,
       panelMove: '',
       panelDate: null,
       monthSelectOpen: false,
@@ -150,12 +159,15 @@ export default {
   },
   methods: {
     applyClick(){
-      this.$emit('update:dateOne',format(this.selectionDateOne,'MM-DD-YYYY'))
-      this.$emit('update:dateTwo',format(this.selectionDateTwo,'MM-DD-YYYY'))
       this.$emit('close')
     },
     cancelClick(){
+      this.updatePropDates(this.initialDateOne,this.initialDateTwo)
       this.$emit('close')
+    },
+    updatePropDates(dateOne,dateTwo){
+      this.$emit('update:dateOne', dateOne ? format(dateOne,'MM-DD-YYYY') : '')
+      this.$emit('update:dateTwo', dateTwo ? format(dateTwo,'MM-DD-YYYY') : '')
     },
     dayClick(date) {
       if (this.selectionCount === 1) {
@@ -178,6 +190,7 @@ export default {
         }
         this.selectionCount = 1
       }
+      this.updatePropDates(this.selectionDateOne,this.selectionDateTwo)
     },
     dayStyles(date) {
       const isBeforeMinDay = this.computedMinDate
@@ -251,8 +264,14 @@ export default {
       this.panelMove = ''
     },
     propDatesToSelection(){
-      if (this.dateOne !== '') this.selectionDateOne = this.getDateFromString(this.dateOne)
-      if (this.dateTwo !== '') this.selectionDateTwo = this.getDateFromString(this.dateTwo)
+      if (this.dateOne !== '') {
+        this.selectionDateOne = this.getDateFromString(this.dateOne)
+        this.initialDateOne = this.selectionDateOne
+      }
+      if (this.dateTwo !== '') {
+        this.selectionDateTwo = this.getDateFromString(this.dateTwo)
+        this.initialDateTwo = this.selectionDateTwo
+      }
     }
   },
   computed: {
@@ -294,7 +313,19 @@ export default {
 }
 </script>
 
-<style lang="sass">
+<style lang="sass" scoped>
+::-webkit-scrollbar
+  width: 5px
+
+::-webkit-scrollbar-track 
+  background: #f1f1f1
+
+::-webkit-scrollbar-thumb
+  background: #888
+
+::-webkit-scrollbar-thumb:hover
+  background: #555
+
 .datepicker__btn
   color: #808080
   transition: none
@@ -493,18 +524,23 @@ export default {
   justify-content: space-between
   padding: 0 15px 15px
 
-</style>
+@media screen and (max-width: 450px)
+  .datepicker
+    max-width: initial
+    position: fixed
+    right: 0
+    bottom: 0
+  
+  .datepicker__month-container
+    transform: translate(-100%,0)
 
-<style lang="sass" scoped>
-::-webkit-scrollbar
-  width: 5px
+  .datepicker--move-right
+    transform: translate(-200%,0)
 
-::-webkit-scrollbar-track 
-  background: #f1f1f1
+  .datepicker--move-left
+    transform: translate(0,0)
 
-::-webkit-scrollbar-thumb
-  background: #888
+  .datepicker__month
+    min-width: 100%
 
-::-webkit-scrollbar-thumb:hover
-  background: #555
 </style>
