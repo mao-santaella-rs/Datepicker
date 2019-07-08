@@ -17,6 +17,7 @@
     :max-range-days="20"
     @update:dateOne="val => dates.firstDate = val"
     @update:dateTwo="val => dates.lastDate = val"
+    @close="datePickerOpen = !datePickerOpen"
   )
   p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas nisl lacus, fringilla et ex eget, vestibulum semper urna. Ut id varius nisl. Donec sapien justo, tincidunt vitae diam aliquet, sagittis posuere lectus. Nunc ultrices massa non porta vehicula. Sed lobortis orci non neque ultrices posuere. Phasellus ornare tempor purus sit amet finibus. Mauris tempus volutpat commodo. Proin quis laoreet urna. Nunc sapien tellus, accumsan et orci at, auctor blandit mi. Quisque vitae lectus lacus. Donec consequat justo sed auctor elementum. Nullam porttitor consequat sapien eu ultricies. Donec a tincidunt nisl, sit amet pulvinar nulla.
 
@@ -33,11 +34,11 @@ export default {
   data(){
     return{
       dates:{
-        firstDate: '',
-        lastDate: '',
+        firstDate: '07-10-2019',
+        lastDate: '07-17-2019',
       },
       panels: 1,
-      datePickerOpen: true
+      datePickerOpen: false
     }
   }
 }
@@ -53,4 +54,13 @@ button
   background-color: #fff
   &:hover, &:focus
     outline: none
+
+.datepicker__footer
+  button
+    color: #666
+    font-weight: 700
+    font-size: 16px
+    &:hover, &:focus
+      color: #999
+      background-color: transparent
 </style>

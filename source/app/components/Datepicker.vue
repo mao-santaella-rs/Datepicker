@@ -25,7 +25,7 @@
             button.datepicker__day.datepicker__btn(
               v-for="day in month.days"
               :class="dayStyles(day.date)",
-              @click="dayClick(day.date)"
+              @click="() => dayClick(day.date)"
             ) 
               span {{day.number}}
 
@@ -42,7 +42,7 @@
       .datepicker__monthpicker__content
         button.datepicker__btn(
           v-for="(month,index) in months"
-          @click="monthClick(index)"
+          @click="() => monthClick(index)"
           :class="{'datepicker__day--today' : index === computedPanelDate.month}"
           :key="'month-'+month"
         ) {{month}}
@@ -52,16 +52,17 @@
         button.datepicker__btn(
           v-for="year in yearsList"
           :class="{'datepicker__day--today' : year === computedPanelDate.year}"
-          @click="yearClick(year)"
+          @click="() => yearClick(year)"
           :key="'year-'+year"
         ) {{year}}
 
     .datepicker__footer
+      button(@click="applyClick") Apply
+      button(@click="cancelClick") Cancel
 
 </template>
 
 <script>
-const differenceInCalendarMonths = require("date-fns/difference_in_calendar_months")
 const differenceInDays = require('date-fns/difference_in_calendar_days')
 const getYear = require("date-fns/get_year")
 const getDay = require("date-fns/get_day")
@@ -88,10 +89,6 @@ export default {
     dateTwo: {
       type: String,
       default: ''
-    },
-    monthsForSelect: {
-      type: Number,
-      default: 24
     },
     minDate: {
       type: String,
@@ -129,45 +126,56 @@ export default {
       months: ["January","February","March","April","May","June","July","August","September","October","November","December"],
       days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       selectionCount: 1,
+      selectionDateOne: null,
+      selectionDateTwo: null,
       panelMove: '',
       panelDate: null,
       monthSelectOpen: false,
       yearSelectOpen: false
     }
   },
+  watch:{
+    open(val){
+      if (val) this.propDatesToSelection()
+    }
+  },
   mounted() {
     this.today = new Date()
     this.panelDate = new Date(getYear(this.today), getMonth(this.today))
+    this.propDatesToSelection()
     this.$refs.container.addEventListener(this.whichTransitionEvent(), this.afterTransition)
   },
   beforeDestroy() {
     this.$refs.container.removeEventListener(this.whichTransitionEvent(), this.afterTransition)
   },
   methods: {
+    applyClick(){
+      this.$emit('update:dateOne',format(this.selectionDateOne,'MM-DD-YYYY'))
+      this.$emit('update:dateTwo',format(this.selectionDateTwo,'MM-DD-YYYY'))
+      this.$emit('close')
+    },
+    cancelClick(){
+      this.$emit('close')
+    },
     dayClick(date) {
-
       if (this.selectionCount === 1) {
-        this.$emit('update:dateOne', format(date, "MM-DD-YYYY"))
-        this.$emit('update:dateTwo', '')
+        this.selectionDateOne = date
+        this.selectionDateTwo = null
         this.selectionCount = 2
-        
-      } else if (isBefore(date, this.computedDateOne)) {
-
-        if (this.maxRangeDays > 0 && differenceInDays(this.computedDateOne,date) > this.maxRangeDays -1){
-          this.$emit('update:dateTwo', format(addDays(date,this.maxRangeDays-1), "MM-DD-YYYY"))
+      } else if (isBefore(date, this.selectionDateOne)) {
+        if (this.maxRangeDays > 0 && differenceInDays(this.selectionDateOne,date) > this.maxRangeDays -1){
+          this.selectionDateTwo = addDays(date,this.maxRangeDays-1)
         } else {
-          this.$emit('update:dateTwo', this.dateOne)
+          this.selectionDateTwo = this.selectionDateOne
         }
-
-        this.$emit('update:dateOne', format(date, "MM-DD-YYYY"))
+        this.selectionDateOne = date
         this.selectionCount = 1
       } else {
-        this.$emit('update:dateTwo', format(date, "MM-DD-YYYY"))
+        this.selectionDateTwo = date
         
-        if (this.maxRangeDays > 0 && differenceInDays(date,this.computedDateOne) > this.maxRangeDays -1){
-          this.$emit('update:dateOne', format(subDays(date,this.maxRangeDays-1), "MM-DD-YYYY"))
+        if (this.maxRangeDays > 0 && differenceInDays(date,this.selectionDateOne) > this.maxRangeDays -1){
+          this.selectionDateOne = subDays(date,this.maxRangeDays-1)
         }
-
         this.selectionCount = 1
       }
     },
@@ -183,9 +191,9 @@ export default {
         : false
       return {
         "datepicker__day--today": isSameDay(date, this.today),
-        "datepicker__day--selected": isSameDay(date, this.computedDateOne) || isSameDay(date, this.computedDateTwo),
-        "datepicker__day--in-range": isDate(this.computedDateTwo)
-          ? isWithinRange(date, this.computedDateOne, this.computedDateTwo)
+        "datepicker__day--selected": isSameDay(date, this.selectionDateOne) || isSameDay(date, this.selectionDateTwo),
+        "datepicker__day--in-range": isDate(this.selectionDateTwo)
+          ? isWithinRange(date, this.selectionDateOne, this.selectionDateTwo)
           : false,
         "datepicker__day--disabled": isBeforeMinDay || isAfterMaxDay || isDisabledDay
       }
@@ -241,14 +249,18 @@ export default {
         this.panelDate = addMonths(this.panelDate,1)
       }
       this.panelMove = ''
+    },
+    propDatesToSelection(){
+      if (this.dateOne !== '') this.selectionDateOne = this.getDateFromString(this.dateOne)
+      if (this.dateTwo !== '') this.selectionDateTwo = this.getDateFromString(this.dateTwo)
     }
   },
   computed: {
-    computedDateOne(){
-      return this.dateOne != '' ? this.getDateFromString(this.dateOne) : false
+    computedDateOneString(){
+      return format(this.selectionDateOne,'MM-DD-YYYY')
     },
-    computedDateTwo(){
-      return this.dateTwo != '' ? this.getDateFromString(this.dateTwo) : false
+    computedDateTwoString(){
+      return format(this.selectionDateTwo,'MM-DD-YYYY')
     },
     computedMinDate() {
       return this.minDate != '' ? this.getDateFromString(this.minDate) : false
@@ -476,6 +488,11 @@ export default {
     &:nth-child(4n+1)
       border-left: none
     
+.datepicker__footer
+  display: flex
+  justify-content: space-between
+  padding: 0 15px 15px
+
 </style>
 
 <style lang="sass" scoped>
