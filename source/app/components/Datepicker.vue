@@ -72,6 +72,7 @@
 </template>
 
 <script>
+// date-fns imports
 const differenceInDays = require('date-fns/difference_in_calendar_days')
 const getYear = require("date-fns/get_year")
 const getDay = require("date-fns/get_day")
@@ -147,20 +148,27 @@ export default {
   watch:{
     open(val){
       if (val) {
+        // load the dates from the props to the internal selection
         this.propDatesToSelection()
+        // event listener to detect a click outside of the component 
         document.addEventListener('mousedown', this.outsideClick)
       } else {
+        // add the listener when open and remove it when close
         document.removeEventListener('mousedown', this.outsideClick)
       }
     }
   },
   mounted() {
+    // create the today date
     this.today = new Date()
+    // create the current panel date
     this.panelDate = new Date(getYear(this.today), getMonth(this.today))
     this.propDatesToSelection()
+    // event listener for the timing on the slide transition
     this.$refs.container.addEventListener(this.whichTransitionEvent(), this.afterTransition)
   },
   beforeDestroy() {
+    // remove all listeners
     this.$refs.container.removeEventListener(this.whichTransitionEvent(), this.afterTransition)
     document.removeEventListener('mousedown', this.outsideClick)
   },
@@ -169,6 +177,7 @@ export default {
       this.$emit('close')
     },
     cancelClick(){
+      // revert the changes
       this.updatePropDates(this.initialDateOne,this.initialDateTwo)
       this.$emit('close')
     },
@@ -184,10 +193,14 @@ export default {
         this.selectionDateOne = date
         this.selectionDateTwo = null
         this.selectionCount = 2
-      } else if (isBefore(date, this.selectionDateOne)) {
+      } 
+      // if the second selection is before the first
+      else if (isBefore(date, this.selectionDateOne)) {
+        // if the range it's over the maxRangeDays adjust it to dateTwo
         if (this.maxRangeDays > 0 && differenceInDays(this.selectionDateOne,date) > this.maxRangeDays -1){
           this.selectionDateTwo = addDays(date,this.maxRangeDays-1)
         } else {
+          // else asign dateOne to dateTwo
           this.selectionDateTwo = this.selectionDateOne
         }
         this.selectionDateOne = date
@@ -195,11 +208,13 @@ export default {
       } else {
         this.selectionDateTwo = date
         
+        // if with the second selection the range is greater than maxRangeDays adjust it
         if (this.maxRangeDays > 0 && differenceInDays(date,this.selectionDateOne) > this.maxRangeDays -1){
           this.selectionDateOne = subDays(date,this.maxRangeDays-1)
         }
         this.selectionCount = 1
       }
+      // stream the dates
       this.updatePropDates(this.selectionDateOne,this.selectionDateTwo)
     },
     dayStyles(date) {
@@ -244,6 +259,7 @@ export default {
         year: year,
         month: month,
         days: days,
+        // this will give the index of the weekday of the first day of the month
         null: getDay(date)
       }
     },
@@ -251,6 +267,7 @@ export default {
       let dateArr = string.split("-").map(el => Number(el))
       return new Date(dateArr[2], dateArr[0] - 1, dateArr[1])
     },
+    // this method will return a cross-browser property of the transition 
     whichTransitionEvent(){
       const transitions = {
         "transition" : "transitionend",
@@ -263,7 +280,8 @@ export default {
           return transitions[t]
         }
       }
-		},
+    },
+    // after the transition end the computed calendar will update
     afterTransition(event){
       if (event.propertyName !== "transform") return
       if (this.panelMove === 'left'){
@@ -303,6 +321,7 @@ export default {
         month: getMonth(this.panelDate)
       }
     },
+    // list for the year selection
     yearsList(){
       const minYear = getYear(this.today) - 15
       let yearList = []
@@ -314,6 +333,7 @@ export default {
     calendar(){
       if (!this.today) return []
       let calendar = []
+      // it will load 4 months everi time it updates one before and one after for the transition and the extra for the 2 panel view
       for (let date = subMonths(this.panelDate,1) ; !isSameDay(date,addMonths(this.panelDate,3)) ; date = addMonths(date,1)) {
         calendar.push(this.buildMonth(date))
       }
