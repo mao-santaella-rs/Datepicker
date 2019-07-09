@@ -65,8 +65,8 @@
         ) {{year}}
 
     .datepicker__footer
-      button(@click="applyClick") Apply
       button(@click="cancelClick") Cancel
+      button(@click="applyClick") Apply
 
 </template>
 
@@ -415,6 +415,9 @@ export default {
   @for $i from 1 through 7
     &:nth-child(#{$i}):not(.datepicker__day--null)
       border-top: 1px solid #e6e6e6
+  &:focus, &:hover
+    background-color: #999999
+    color: white
 
 .datepicker__day--last-null
   border-right: 1px solid #e6e6e6 !important
@@ -440,9 +443,6 @@ export default {
 .datepicker__day--selected,
   background-color: #999999
   color: white
-  &:focus
-    background-color: #999999
-    color: white
 
 .datepicker__day--disabled
   color: #dadada
