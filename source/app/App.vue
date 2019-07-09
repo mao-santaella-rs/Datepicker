@@ -38,7 +38,7 @@ export default {
         lastDate: '07-17-2019',
       },
       panels: 1,
-      datePickerOpen: true
+      datePickerOpen: false
     }
   }
 }

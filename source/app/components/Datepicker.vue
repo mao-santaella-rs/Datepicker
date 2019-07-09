@@ -1,6 +1,7 @@
 <template lang="pug">
 .datepicker__container
   .datepicker(
+    ref="datepicker"
     :class="{'datepicker--open' : open,'datepicker--two-panels' : monthsToShow === 2}"
   )
     .datepicker__content
@@ -145,7 +146,12 @@ export default {
   },
   watch:{
     open(val){
-      if (val) this.propDatesToSelection()
+      if (val) {
+        this.propDatesToSelection()
+        document.addEventListener('mousedown', this.outsideClick)
+      } else {
+        document.removeEventListener('mousedown', this.outsideClick)
+      }
     }
   },
   mounted() {
@@ -156,6 +162,7 @@ export default {
   },
   beforeDestroy() {
     this.$refs.container.removeEventListener(this.whichTransitionEvent(), this.afterTransition)
+    document.removeEventListener('mousedown', this.outsideClick)
   },
   methods: {
     applyClick(){
@@ -168,6 +175,9 @@ export default {
     updatePropDates(dateOne,dateTwo){
       this.$emit('update:dateOne', dateOne ? format(dateOne,'MM-DD-YYYY') : '')
       this.$emit('update:dateTwo', dateTwo ? format(dateTwo,'MM-DD-YYYY') : '')
+    },
+    outsideClick(event) {
+      if (!this.$refs.datepicker.contains(event.target)) this.$emit('close')      
     },
     dayClick(date) {
       if (this.selectionCount === 1) {
