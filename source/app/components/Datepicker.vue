@@ -4,6 +4,8 @@
     ref="datepicker"
     :class="{'datepicker--open' : open,'datepicker--two-panels' : monthsToShow === 2}"
   )
+    .datepicker__responsive-header
+      span {{computedDateOneString}} - {{computedDateTwoString}}
     .datepicker__content
       .datepicker__month-container(
         ref="container"
@@ -304,10 +306,10 @@ export default {
   },
   computed: {
     computedDateOneString(){
-      return format(this.selectionDateOne,'MM-DD-YYYY')
+      return this.selectionDateOne ? format(this.selectionDateOne,'MM-DD-YYYY') : 'MM-DD-YYYY'
     },
     computedDateTwoString(){
-      return format(this.selectionDateTwo,'MM-DD-YYYY')
+      return this.selectionDateTwo ? format(this.selectionDateTwo,'MM-DD-YYYY') : 'MM-DD-YYYY'
     },
     computedMinDate() {
       return this.minDate != '' ? this.getDateFromString(this.minDate) : false
@@ -554,12 +556,25 @@ export default {
   justify-content: space-between
   padding: 0 15px 15px
 
+.datepicker__responsive-header
+  display: none
+  justify-content: center
+  padding-top: 15px
+
+  span 
+    font-size: 18px
+    font-weight: 700
+    color: #999
+
 @media screen and (max-width: 450px)
   .datepicker
     max-width: initial
     position: fixed
     right: 0
     bottom: 0
+
+  .datepicker__responsive-header
+    display: flex
   
   .datepicker__month-container
     transform: translate(-100%,0)
