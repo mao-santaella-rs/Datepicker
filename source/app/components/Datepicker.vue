@@ -79,23 +79,23 @@
 <script>
 // date-fns imports
 const differenceInDays = require('date-fns/difference_in_calendar_days')
-const getYear = require("date-fns/get_year")
-const getDay = require("date-fns/get_day")
-const getDaysInMonth = require("date-fns/get_days_in_month")
-const isSameDay = require("date-fns/is_same_day")
-const isWithinRange = require("date-fns/is_within_range")
-const isDate = require("date-fns/is_date")
-const isBefore = require("date-fns/is_before")
-const isAfter = require("date-fns/is_after")
+const getYear = require('date-fns/get_year')
+const getDay = require('date-fns/get_day')
+const getDaysInMonth = require('date-fns/get_days_in_month')
+const isSameDay = require('date-fns/is_same_day')
+const isWithinRange = require('date-fns/is_within_range')
+const isDate = require('date-fns/is_date')
+const isBefore = require('date-fns/is_before')
+const isAfter = require('date-fns/is_after')
 const addDays = require('date-fns/add_days')
-const addMonths = require("date-fns/add_months")
+const addMonths = require('date-fns/add_months')
 const subDays = require('date-fns/sub_days')
-const subMonths = require("date-fns/sub_months")
-const getMonth = require("date-fns/get_month")
-const format = require("date-fns/format")
+const subMonths = require('date-fns/sub_months')
+const getMonth = require('date-fns/get_month')
+const format = require('date-fns/format')
 
 export default {
-  name: "Datepicker",
+  name: 'Datepicker',
   props: {
     dateOne: {
       type: String,
@@ -107,11 +107,11 @@ export default {
     },
     minDate: {
       type: String,
-      default: ""
+      default: ''
     },
     maxDate: {
       type: String,
-      default: ""
+      default: ''
     },
     disabledDays: {
       // TODO when is in between the selection?
@@ -125,7 +125,7 @@ export default {
     maxRangeDays: {
       type: Number,
       default: 0,
-      validator: function (val) {
+      validator: function(val) {
         return val > 5 || val === 0
       }
     },
@@ -137,8 +137,8 @@ export default {
   data() {
     return {
       today: null,
-      months: ["January","February","March","April","May","June","July","August","September","October","November","December"],
-      days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+      days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
       selectionCount: 1,
       selectionDateOne: null,
       selectionDateTwo: null,
@@ -151,14 +151,14 @@ export default {
     }
   },
   watch:{
-    open(val){
+    open(val) {
       if (val) {
         // load the dates from the props to the internal selection
         this.selectionDateOne = this.dateOne !== '' ? this.getDateFromString(this.dateOne) : ''
         this.initialDateOne = this.selectionDateOne
         this.selectionDateTwo = this.dateTwo !== '' ? this.getDateFromString(this.dateTwo) : ''
         this.initialDateTwo = this.selectionDateTwo
-        // event listener to detect a click outside of the component 
+        // event listener to detect a click outside of the component
         document.addEventListener('mousedown', this.outsideClick)
       } else {
         // add the listener when open and remove it when close
@@ -180,17 +180,17 @@ export default {
     document.removeEventListener('mousedown', this.outsideClick)
   },
   methods: {
-    applyClick(){
+    applyClick() {
       this.close()
     },
-    cancelClick(){
+    cancelClick() {
       // revert the changes
-      this.updatePropDates(this.initialDateOne,this.initialDateTwo)
+      this.updatePropDates(this.initialDateOne, this.initialDateTwo)
       this.close()
     },
-    updatePropDates(dateOne,dateTwo){
-      this.$emit('update:dateOne', dateOne ? format(dateOne,'MM-DD-YYYY') : '')
-      this.$emit('update:dateTwo', dateTwo ? format(dateTwo,'MM-DD-YYYY') : '')
+    updatePropDates(dateOne, dateTwo) {
+      this.$emit('update:dateOne', dateOne ? format(dateOne, 'MM-DD-YYYY') : '')
+      this.$emit('update:dateTwo', dateTwo ? format(dateTwo, 'MM-DD-YYYY') : '')
     },
     outsideClick(event) {
       if (this.$refs.datepicker.contains(event.target)) return
@@ -199,19 +199,19 @@ export default {
         this.updatePropDates(this.initialDateOne, this.initialDateTwo)
         this.selectionCount = 1
       }
-      this.close() 
+      this.close()
     },
     dayClick(date) {
       if (this.selectionCount === 1) {
         this.selectionDateOne = date
         this.selectionDateTwo = null
         this.selectionCount = 2
-      } 
+      }
       // if the second selection is before the first
       else if (isBefore(date, this.selectionDateOne)) {
         // if the range it's over the maxRangeDays adjust it to dateTwo
-        if (this.maxRangeDays > 0 && differenceInDays(this.selectionDateOne,date) > this.maxRangeDays -1){
-          this.selectionDateTwo = addDays(date,this.maxRangeDays-1)
+        if (this.maxRangeDays > 0 && differenceInDays(this.selectionDateOne, date) > this.maxRangeDays - 1) {
+          this.selectionDateTwo = addDays(date, this.maxRangeDays - 1)
         } else {
           // else asign dateOne to dateTwo
           this.selectionDateTwo = this.selectionDateOne
@@ -220,53 +220,49 @@ export default {
         this.selectionCount = 1
       } else {
         this.selectionDateTwo = date
-        
+
         // if with the second selection the range is greater than maxRangeDays adjust it
-        if (this.maxRangeDays > 0 && differenceInDays(date,this.selectionDateOne) > this.maxRangeDays -1){
-          this.selectionDateOne = subDays(date,this.maxRangeDays-1)
+        if (this.maxRangeDays > 0 && differenceInDays(date, this.selectionDateOne) > this.maxRangeDays - 1) {
+          this.selectionDateOne = subDays(date, this.maxRangeDays - 1)
         }
         this.selectionCount = 1
       }
       // stream the dates
-      this.updatePropDates(this.selectionDateOne,this.selectionDateTwo)
+      this.updatePropDates(this.selectionDateOne, this.selectionDateTwo)
     },
     dayStyles(date) {
-      const isBeforeMinDay = this.computedMinDate
-        ? isBefore(date, this.computedMinDate)
-        : false
-      const isAfterMaxDay = this.computedMaxDate
-        ? isAfter(date, this.computedMaxDate)
-        : false
+      const isBeforeMinDay = this.computedMinDate ? isBefore(date, this.computedMinDate) : false
+      const isAfterMaxDay = this.computedMaxDate ? isAfter(date, this.computedMaxDate) : false
       const isDisabledDay = this.disabledDays.length
-        ? this.disabledDays.some(val => isSameDay(date, this.getDateFromString(val)))
+        ? this.disabledDays.some((val) => isSameDay(date, this.getDateFromString(val)))
         : false
       return {
-        "datepicker__day--today": isSameDay(date, this.today),
+        'datepicker__day--today': isSameDay(date, this.today),
         'datepicker__day--selected-one': isSameDay(date, this.selectionDateOne),
         'datepicker__day--selected-two': isSameDay(date, this.selectionDateTwo),
-        "datepicker__day--in-range": isDate(this.selectionDateTwo)
+        'datepicker__day--in-range': isDate(this.selectionDateTwo)
           ? isWithinRange(date, this.selectionDateOne, this.selectionDateTwo)
           : false,
-        "datepicker__day--disabled": isBeforeMinDay || isAfterMaxDay || isDisabledDay
+        'datepicker__day--disabled': isBeforeMinDay || isAfterMaxDay || isDisabledDay
       }
     },
-    monthClick(index){
-      this.panelDate = new Date(this.computedPanelDate.year,index)
+    monthClick(index) {
+      this.panelDate = new Date(this.computedPanelDate.year, index)
       this.monthSelectOpen = false
     },
-    yearClick(year){
-      this.panelDate = new Date(year,this.computedPanelDate.month)
+    yearClick(year) {
+      this.panelDate = new Date(year, this.computedPanelDate.month)
       this.yearSelectOpen = false
     },
     buildMonth(date) {
       let year = getYear(date)
       let month = getMonth(date)
       let days = []
-      
+
       for (let day = 1; day <= getDaysInMonth(date); day++) {
         days.push({
           number: day,
-          date: new Date(year,month,day)
+          date: new Date(year, month, day)
         })
       }
       return {
@@ -278,30 +274,30 @@ export default {
       }
     },
     getDateFromString(string) {
-      let dateArr = string.split("-").map(el => Number(el))
+      let dateArr = string.split('-').map((el) => Number(el))
       return new Date(dateArr[2], dateArr[0] - 1, dateArr[1])
     },
-    // this method will return a cross-browser property of the transition 
-    whichTransitionEvent(){
+    // this method will return a cross-browser property of the transition
+    whichTransitionEvent() {
       const transitions = {
-        "transition" : "transitionend",
-        "OTransition" : "oTransitionEnd",
-        "MozTransition" : "transitionend",
-        "WebkitTransition" : "webkitTransitionEnd"
+        transition: 'transitionend',
+        OTransition: 'oTransitionEnd',
+        MozTransition: 'transitionend',
+        WebkitTransition: 'webkitTransitionEnd'
       }
-      for (let t in transitions){
-        if (this.$refs.container.style[t] !== undefined){
+      for (let t in transitions) {
+        if (this.$refs.container.style[t] !== undefined) {
           return transitions[t]
         }
       }
     },
     // after the transition end the computed calendar will update
-    afterTransition(event){
-      if (event.propertyName !== "transform") return
-      if (this.panelMove === 'left'){
-        this.panelDate = subMonths(this.panelDate,1)
+    afterTransition(event) {
+      if (event.propertyName !== 'transform') return
+      if (this.panelMove === 'left') {
+        this.panelDate = subMonths(this.panelDate, 1)
       } else if (this.panelMove === 'right') {
-        this.panelDate = addMonths(this.panelDate,1)
+        this.panelDate = addMonths(this.panelDate, 1)
       }
       this.panelMove = ''
     },
@@ -312,11 +308,11 @@ export default {
     }
   },
   computed: {
-    computedDateOneString(){
-      return this.selectionDateOne ? format(this.selectionDateOne,'MM-DD-YYYY') : 'MM-DD-YYYY'
+    computedDateOneString() {
+      return this.selectionDateOne ? format(this.selectionDateOne, 'MM-DD-YYYY') : 'MM-DD-YYYY'
     },
-    computedDateTwoString(){
-      return this.selectionDateTwo ? format(this.selectionDateTwo,'MM-DD-YYYY') : 'MM-DD-YYYY'
+    computedDateTwoString() {
+      return this.selectionDateTwo ? format(this.selectionDateTwo, 'MM-DD-YYYY') : 'MM-DD-YYYY'
     },
     computedMinDate() {
       return this.minDate != '' ? this.getDateFromString(this.minDate) : false
@@ -331,7 +327,7 @@ export default {
       }
     },
     // list for the year selection
-    yearsList(){
+    yearsList() {
       const minYear = getYear(this.today) - 15
       let yearList = []
       for (let year = minYear; year <= minYear + 31; year++) {
@@ -339,11 +335,15 @@ export default {
       }
       return yearList
     },
-    calendar(){
+    calendar() {
       if (!this.today) return []
       let calendar = []
       // it will load 4 months everi time it updates one before and one after for the transition and the extra for the 2 panel view
-      for (let date = subMonths(this.panelDate,1) ; !isSameDay(date,addMonths(this.panelDate,3)) ; date = addMonths(date,1)) {
+      for (
+        let date = subMonths(this.panelDate, 1);
+        !isSameDay(date, addMonths(this.panelDate, 3));
+        date = addMonths(date, 1)
+      ) {
         calendar.push(this.buildMonth(date))
       }
       return calendar
