@@ -8,16 +8,13 @@
     a(@click="datePickerOpen = !datePickerOpen") open / close
     br
   Datepicker(
-    :open="datePickerOpen"
+    :open.sync="datePickerOpen"
     min-date="12-05-2016"
     max-date="03-25-2021"
-    :date-one="dates.firstDate"
-    :date-two="dates.lastDate"
+    :date-one.sync="dates.firstDate"
+    :date-two.sync="dates.lastDate"
     :months-to-show="panels"
     :max-range-days="90"
-    @update:dateOne="val => dates.firstDate = val"
-    @update:dateTwo="val => dates.lastDate = val"
-    @close="datePickerOpen = !datePickerOpen"
   )
   p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas nisl lacus, fringilla et ex eget, vestibulum semper urna. Ut id varius nisl. Donec sapien justo, tincidunt vitae diam aliquet, sagittis posuere lectus. Nunc ultrices massa non porta vehicula. Sed lobortis orci non neque ultrices posuere. Phasellus ornare tempor purus sit amet finibus. Mauris tempus volutpat commodo. Proin quis laoreet urna. Nunc sapien tellus, accumsan et orci at, auctor blandit mi. Quisque vitae lectus lacus. Donec consequat justo sed auctor elementum. Nullam porttitor consequat sapien eu ultricies. Donec a tincidunt nisl, sit amet pulvinar nulla.
 
@@ -38,7 +35,7 @@ export default {
         lastDate: '',
       },
       panels: 1,
-      datePickerOpen: true
+      datePickerOpen: false
     }
   }
 }

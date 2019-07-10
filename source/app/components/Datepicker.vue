@@ -154,7 +154,10 @@ export default {
     open(val){
       if (val) {
         // load the dates from the props to the internal selection
-        this.propDatesToSelection()
+        this.selectionDateOne = this.dateOne !== '' ? this.getDateFromString(this.dateOne) : ''
+        this.initialDateOne = this.selectionDateOne
+        this.selectionDateTwo = this.dateTwo !== '' ? this.getDateFromString(this.dateTwo) : ''
+        this.initialDateTwo = this.selectionDateTwo
         // event listener to detect a click outside of the component 
         document.addEventListener('mousedown', this.outsideClick)
       } else {
@@ -168,7 +171,6 @@ export default {
     this.today = new Date()
     // create the current panel date
     this.panelDate = new Date(getYear(this.today), getMonth(this.today))
-    this.propDatesToSelection()
     // event listener for the timing on the slide transition
     this.$refs.container.addEventListener(this.whichTransitionEvent(), this.afterTransition)
   },
@@ -179,19 +181,25 @@ export default {
   },
   methods: {
     applyClick(){
-      this.$emit('close')
+      this.close()
     },
     cancelClick(){
       // revert the changes
       this.updatePropDates(this.initialDateOne,this.initialDateTwo)
-      this.$emit('close')
+      this.close()
     },
     updatePropDates(dateOne,dateTwo){
       this.$emit('update:dateOne', dateOne ? format(dateOne,'MM-DD-YYYY') : '')
       this.$emit('update:dateTwo', dateTwo ? format(dateTwo,'MM-DD-YYYY') : '')
     },
     outsideClick(event) {
-      if (!this.$refs.datepicker.contains(event.target)) this.$emit('close')      
+      if (this.$refs.datepicker.contains(event.target)) return
+
+      if (this.selectionCount === 2) {
+        this.updatePropDates(this.initialDateOne, this.initialDateTwo)
+        this.selectionCount = 1
+      }
+      this.close() 
     },
     dayClick(date) {
       if (this.selectionCount === 1) {
@@ -297,15 +305,10 @@ export default {
       }
       this.panelMove = ''
     },
-    propDatesToSelection(){
-      if (this.dateOne !== '') {
-        this.selectionDateOne = this.getDateFromString(this.dateOne)
-        this.initialDateOne = this.selectionDateOne
-      }
-      if (this.dateTwo !== '') {
-        this.selectionDateTwo = this.getDateFromString(this.dateTwo)
-        this.initialDateTwo = this.selectionDateTwo
-      }
+    close() {
+      this.$emit('update:open', false)
+      this.monthSelectOpen = false
+      this.yearSelectOpen = false
     }
   },
   computed: {
