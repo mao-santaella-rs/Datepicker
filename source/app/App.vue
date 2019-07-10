@@ -3,9 +3,9 @@
   .container
     span from: {{dates.firstDate}} to: {{dates.lastDate}}
     br
-    a(href="#" @click="panels = panels == 1 ? 2 : 1") show 1 or 2 months
+    a(@click="panels = panels == 1 ? 2 : 1") show 1 or 2 months
     br
-    a(href="#" @click="datePickerOpen = !datePickerOpen") open / close
+    a(@click="datePickerOpen = !datePickerOpen") open / close
     br
   Datepicker(
     :open="datePickerOpen"
@@ -14,7 +14,7 @@
     :date-one="dates.firstDate"
     :date-two="dates.lastDate"
     :months-to-show="panels"
-    :max-range-days="20"
+    :max-range-days="90"
     @update:dateOne="val => dates.firstDate = val"
     @update:dateTwo="val => dates.lastDate = val"
     @close="datePickerOpen = !datePickerOpen"
@@ -34,11 +34,11 @@ export default {
   data(){
     return{
       dates:{
-        firstDate: '07-10-2019',
-        lastDate: '07-17-2019',
+        firstDate: '',
+        lastDate: '',
       },
       panels: 1,
-      datePickerOpen: false
+      datePickerOpen: true
     }
   }
 }
@@ -47,19 +47,7 @@ export default {
 <style lang="sass">
 body
   padding: 50px
-button
-  padding: 0
-  border-radius: 0
-  background-color: #fff
-  &:hover, &:focus
-    outline: none
 
-.datepicker__footer
-  button
-    color: #666
-    font-weight: 700
-    font-size: 16px
-    &:hover, &:focus
-      color: #999
-      background-color: transparent
+a
+  cursor: pointer
 </style>
