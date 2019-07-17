@@ -34,7 +34,7 @@ export default {
         lastDate: '',
       },
       panels: 2,
-      datePickerOpen: true
+      datePickerOpen: false
     }
   }
 }
