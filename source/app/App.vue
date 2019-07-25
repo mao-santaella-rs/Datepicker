@@ -9,13 +9,21 @@
     br
   Datepicker(
     :open.sync="datePickerOpen"
-    min-date="12-05-2016"
-    max-date="03-25-2021"
     :date-one.sync="dates.firstDate"
     :date-two.sync="dates.lastDate"
     :months-to-show="panels"
     :max-range-days="90"
   )
+  .container
+    p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi pulvinar gravida metus sed sollicitudin. Donec tellus ligula, maximus sed tellus id, sagittis egestas purus. Pellentesque ac vestibulum augue. In ultrices sollicitudin neque, eu vehicula purus luctus vitae. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pulvinar eros et dapibus blandit. Maecenas id elit elit. Curabitur semper commodo porttitor. Pellentesque porttitor augue ut quam commodo, nec congue lorem venenatis. Nullam hendrerit ipsum euismod gravida scelerisque. Sed dictum nunc ante, ut posuere nisl hendrerit ac. 
+  Datepicker(
+    :date-one.sync="dates.firstDate"
+    :date-two.sync="dates.lastDate"
+    :months-to-show="panels"
+    block
+  )
+  .container
+    p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi pulvinar gravida metus sed sollicitudin. Donec tellus ligula, maximus sed tellus id, sagittis egestas purus. Pellentesque ac vestibulum augue. In ultrices sollicitudin neque, eu vehicula purus luctus vitae. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pulvinar eros et dapibus blandit. Maecenas id elit elit. Curabitur semper commodo porttitor. Pellentesque porttitor augue ut quam commodo, nec congue lorem venenatis. Nullam hendrerit ipsum euismod gravida scelerisque. Sed dictum nunc ante, ut posuere nisl hendrerit ac. 
   
 </template>
 
