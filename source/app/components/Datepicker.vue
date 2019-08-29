@@ -37,6 +37,7 @@
                 v-for="day in month.days"
                 :class="dayStyles(day.date)",
                 @click="() => dayClick(day.date)"
+                @mouseover="selectionCount == 2 ? dayHover(day.date) : false"
                 :key="`day-${month.month}-${day.number}-${month.year}`"
               ) 
                 span {{day.number}}
@@ -191,6 +192,8 @@ export default {
       selectionDateTwo: null,
       initialDateOne: null,
       initialDateTwo: null,
+      hoverDateOne: null,
+      hoverDateTwo: null,
       dayPickerMove: '',
       dayPickerPanelDate: null,
       monthPickerOpen: false,
@@ -263,27 +266,42 @@ export default {
         this.selectionCount = 2
       }
       // if the second selection is before the first
-      else if (isBefore(date, this.selectionDateOne)) {
-        // if the range it's over the maxRangeDays adjust it to dateTwo
-        if (this.maxRangeDays > 0 && differenceInDays(this.selectionDateOne, date) > this.maxRangeDays - 1) {
-          this.selectionDateTwo = addDays(date, this.maxRangeDays - 1)
+      else {
+        if (isBefore(date, this.selectionDateOne)) {
+          // if the range it's over the maxRangeDays adjust it to dateTwo
+          if (this.maxRangeDays > 0 && differenceInDays(this.selectionDateOne, date) > this.maxRangeDays - 1) {
+            this.selectionDateTwo = addDays(date, this.maxRangeDays - 1)
+          } else {
+            // else asign dateOne to dateTwo
+            this.selectionDateTwo = this.selectionDateOne
+          }
+          this.selectionDateOne = date
+          this.selectionCount = 1
         } else {
-          // else asign dateOne to dateTwo
-          this.selectionDateTwo = this.selectionDateOne
-        }
-        this.selectionDateOne = date
-        this.selectionCount = 1
-      } else {
-        this.selectionDateTwo = date
+          this.selectionDateTwo = date
 
-        // if with the second selection the range is greater than maxRangeDays adjust it
-        if (this.maxRangeDays > 0 && differenceInDays(date, this.selectionDateOne) > this.maxRangeDays - 1) {
-          this.selectionDateOne = subDays(date, this.maxRangeDays - 1)
+          // if with the second selection the range is greater than maxRangeDays adjust it
+          if (this.maxRangeDays > 0 && differenceInDays(date, this.selectionDateOne) > this.maxRangeDays - 1) {
+            this.selectionDateOne = subDays(date, this.maxRangeDays - 1)
+          }
+          this.selectionCount = 1
         }
-        this.selectionCount = 1
+        this.hoverDateOne = undefined
+        this.hoverDateTwo = undefined
       }
       // stream the dates
       this.updatePropDates(this.selectionDateOne, this.selectionDateTwo)
+    },
+    dayHover(date){
+      console.log(date)
+      
+      if(isBefore(date, this.selectionDateOne)){
+        this.hoverDateOne = date
+        this.hoverDateTwo = this.selectionDateOne
+      } else {
+        this.hoverDateOne = this.selectionDateOne
+        this.hoverDateTwo = date
+      }
     },
     daypickerMoveClick(dir) {
       if (dir === 'left') {
@@ -307,11 +325,13 @@ export default {
         : false
       return {
         'datepicker__daypicker__day--today': isSameDay(date, this.today),
-        'datepicker__daypicker__day--dateone': isSameDay(date, this.selectionDateOne),
-        'datepicker__daypicker__day--datetwo': isSameDay(date, this.selectionDateTwo),
+        'datepicker__daypicker__day--dateone': isSameDay(date, this.selectionDateOne) || isSameDay(date, this.hoverDateOne),
+        'datepicker__daypicker__day--datetwo': isSameDay(date, this.selectionDateTwo) || isSameDay(date, this.hoverDateTwo),
         'datepicker__daypicker__day--in-range': isDate(this.selectionDateTwo)
           ? isWithinRange(date, this.selectionDateOne, this.selectionDateTwo)
-          : false,
+          : isDate(this.hoverDateTwo)
+            ? isWithinRange(date, this.hoverDateOne, this.hoverDateTwo)
+            : false,
         'datepicker__daypicker__day--disabled': isBeforeMinDay || isAfterMaxDay || isDisabledDay || isBeforeMinWall || isAfterMaxWall 
       }
     },
