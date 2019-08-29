@@ -121,24 +121,24 @@
 </template>
 
 <script>
-// date-fns imports
-const differenceInDays = require('date-fns/difference_in_calendar_days')
-const getYear = require('date-fns/get_year')
-const getDay = require('date-fns/get_day')
-const getDaysInMonth = require('date-fns/get_days_in_month')
-const isSameDay = require('date-fns/is_same_day')
-const isWithinRange = require('date-fns/is_within_range')
-const isDate = require('date-fns/is_date')
-const isBefore = require('date-fns/is_before')
-const isAfter = require('date-fns/is_after')
-const addDays = require('date-fns/add_days')
-const addMonths = require('date-fns/add_months')
-const addYears = require('date-fns/add_years')
-const subDays = require('date-fns/sub_days')
-const subMonths = require('date-fns/sub_months')
-const subYears = require('date-fns/sub_years')
-const getMonth = require('date-fns/get_month')
-const format = require('date-fns/format')
+import parseISO from 'date-fns/parseISO'
+import differenceInDays from 'date-fns/differenceInDays'
+import getYear from 'date-fns/getYear'
+import getDay from 'date-fns/getDay'
+import getDaysInMonth from 'date-fns/getDaysInMonth'
+import isSameDay from 'date-fns/isSameDay'
+import isWithinInterval from 'date-fns/isWithinInterval'
+import isDate from 'date-fns/isDate'
+import isBefore from 'date-fns/isBefore'
+import isAfter from 'date-fns/isAfter'
+import addDays from 'date-fns/addDays'
+import addMonths from 'date-fns/addMonths'
+import addYears from 'date-fns/addYears'
+import subDays from 'date-fns/subDays'
+import subMonths from 'date-fns/subMonths'
+import subYears from 'date-fns/subYears'
+import getMonth from 'date-fns/getMonth'
+import format from 'date-fns/format'
 
 export default {
   name: 'Datepicker',
@@ -247,8 +247,8 @@ export default {
       this.close()
     },
     updatePropDates(dateOne, dateTwo) {
-      this.$emit('update:dateOne', dateOne ? format(dateOne, 'MM-DD-YYYY') : '')
-      this.$emit('update:dateTwo', dateTwo ? format(dateTwo, 'MM-DD-YYYY') : '')
+      this.$emit('update:dateOne', dateOne ? format(dateOne, 'mm-dd-yyyy') : '')
+      this.$emit('update:dateTwo', dateTwo ? format(dateTwo, 'mm-dd-yyyy') : '')
     },
     outsideClick(event) {
       if (this.$refs.datepicker.contains(event.target)) return
@@ -293,8 +293,6 @@ export default {
       this.updatePropDates(this.selectionDateOne, this.selectionDateTwo)
     },
     dayHover(date){
-      console.log(date)
-      
       if(isBefore(date, this.selectionDateOne)){
         this.hoverDateOne = date
         this.hoverDateTwo = this.selectionDateOne
@@ -328,9 +326,9 @@ export default {
         'datepicker__daypicker__day--dateone': isSameDay(date, this.selectionDateOne) || isSameDay(date, this.hoverDateOne),
         'datepicker__daypicker__day--datetwo': isSameDay(date, this.selectionDateTwo) || isSameDay(date, this.hoverDateTwo),
         'datepicker__daypicker__day--in-range': isDate(this.selectionDateTwo)
-          ? isWithinRange(date, this.selectionDateOne, this.selectionDateTwo)
+          ? isWithinInterval(date, { start: this.selectionDateOne, end: this.selectionDateTwo})
           : isDate(this.hoverDateTwo)
-            ? isWithinRange(date, this.hoverDateOne, this.hoverDateTwo)
+            ? isWithinInterval(date, { start: this.hoverDateOne, end: this.hoverDateTwo})
             : false,
         'datepicker__daypicker__day--disabled': isBeforeMinDay || isAfterMaxDay || isDisabledDay || isBeforeMinWall || isAfterMaxWall 
       }
@@ -497,14 +495,16 @@ export default {
       this.$emit('update:open', false)
       this.monthPickerOpen = false
       this.yearPickerOpen = false
+      this.hoverDateOne = undefined
+      this.hoverDateTwo = undefined
     }
   },
   computed: {
     computedDateOneString() {
-      return this.selectionDateOne ? format(this.selectionDateOne, 'MM-DD-YYYY') : 'MM-DD-YYYY'
+      return this.selectionDateOne ? format(this.selectionDateOne, 'mm-dd-yyyy') : 'mm-dd-yyyy'
     },
     computedDateTwoString() {
-      return this.selectionDateTwo ? format(this.selectionDateTwo, 'MM-DD-YYYY') : 'MM-DD-YYYY'
+      return this.selectionDateTwo ? format(this.selectionDateTwo, 'mm-dd-yyyy') : 'mm-dd-yyyy'
     },
     computedMinDate() {
       return this.minDate != '' ? this.getDateFromString(this.minDate) : false
@@ -519,12 +519,12 @@ export default {
           month: getMonth(this.today)
         },
         dateOne: {
-          year: this.dateOne ? getYear(this.dateOne) : false,
-          month: this.dateOne ? getMonth(this.dateOne) : false
+          year: this.dateOne ? getYear(parseISO(this.dateOne)) : false,
+          month: this.dateOne ? getMonth(parseISO(this.dateOne)) : false
         },
         dateTwo: {
-          year: this.dateTwo ? getYear(this.dateTwo) : false,
-          month: this.dateTwo ? getMonth(this.dateTwo) : false
+          year: this.dateTwo ? getYear(parseISO(this.dateTwo)) : false,
+          month: this.dateTwo ? getMonth(parseISO(this.dateTwo)) : false
         },
         dayPickerPanel:{
           year: getYear(this.dayPickerPanelDate),
