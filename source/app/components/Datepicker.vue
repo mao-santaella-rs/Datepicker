@@ -476,7 +476,7 @@ export default {
       }
       this.dayPickerMove = ''
     },
-    afterMonthpickerTransition(event){      
+    afterMonthpickerTransition(event){
       if (event.propertyName !== 'transform') return
       if (this.monthPickerMove === 'left') {
         this.monthPickerPanelDate = subYears(this.monthPickerPanelDate, 1)
@@ -485,7 +485,7 @@ export default {
       }
       this.monthPickerMove = ''
     },
-    afterYearpickerTransition(event){
+    afterYearpickerTransition(){
       if (this.yearpickerMove === 'left') {
         this.yearPickerPanelYear -= 20
       } else if (this.yearpickerMove === 'right') {
