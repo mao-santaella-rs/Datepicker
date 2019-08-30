@@ -121,24 +121,26 @@
 </template>
 
 <script>
-import parseISO from 'date-fns/parseISO'
-import differenceInDays from 'date-fns/differenceInDays'
-import getYear from 'date-fns/getYear'
-import getDay from 'date-fns/getDay'
-import getDaysInMonth from 'date-fns/getDaysInMonth'
-import isSameDay from 'date-fns/isSameDay'
-import isWithinInterval from 'date-fns/isWithinInterval'
-import isDate from 'date-fns/isDate'
-import isBefore from 'date-fns/isBefore'
-import isAfter from 'date-fns/isAfter'
-import addDays from 'date-fns/addDays'
-import addMonths from 'date-fns/addMonths'
-import addYears from 'date-fns/addYears'
-import subDays from 'date-fns/subDays'
-import subMonths from 'date-fns/subMonths'
-import subYears from 'date-fns/subYears'
-import getMonth from 'date-fns/getMonth'
-import format from 'date-fns/format'
+import { 
+  parseISO,
+  differenceInDays,
+  getYear,
+  getDay,
+  getDaysInMonth,
+  isSameDay,
+  isWithinInterval,
+  isDate,
+  isBefore,
+  isAfter,
+  addDays,
+  addMonths,
+  addYears,
+  subDays,
+  subMonths,
+  subYears,
+  getMonth,
+  format
+} from 'date-fns'
 
 export default {
   name: 'Datepicker',
