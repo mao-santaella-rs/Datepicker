@@ -5,7 +5,7 @@
     :class="{'datepicker--open' : open, 'datepicker--block' : block}"
   )
     .datepicker__responsive-header
-      span {{computedDateOneString}} - {{computedDateTwoString}}
+      span {{dates.dateOne.string}} - {{dates.dateTwo.string}}
     .datepicker__content(
       :class="{'datepicker--two-panels' : monthsToShow === 2}"
     )
@@ -81,8 +81,8 @@
                 :key="`month-${month}`"
               )
                 span {{month}}
-                span.datepicker__monthpicker__dateone Start: {{computedDateOneString}}
-                span.datepicker__monthpicker__datetwo End: {{computedDateTwoString}}
+                span.datepicker__monthpicker__dateone Start: {{dates.dateOne.string}}
+                span.datepicker__monthpicker__datetwo End: {{dates.dateTwo.string}}
         
         button.datepicker__controls__prev(@click="monthPickerMoveClick('left')")
         button.datepicker__controls__next(@click="monthPickerMoveClick('right')")
@@ -109,8 +109,8 @@
                 :key="`year-${decade + num -1}`"
               ) 
                 span {{decade + num -1}}
-                span.datepicker__yearpicker__dateone Start: {{computedDateOneString}}
-                span.datepicker__yearpicker__datetwo End: {{computedDateTwoString}}
+                span.datepicker__yearpicker__dateone Start: {{dates.dateOne.string}}
+                span.datepicker__yearpicker__datetwo End: {{dates.dateTwo.string}}
 
         button.datepicker__controls__prev(@click="yearPickerMoveClick('left')")
         button.datepicker__controls__next(@click="yearPickerMoveClick('right')")
@@ -305,20 +305,20 @@ export default {
     },
     daypickerMoveClick(dir) {
       if (dir === 'left') {
-        if (this.computedMinDate) {
-          if (isBefore(this.dayPickerPanelDate,this.computedMinDate)) return
+        if (this.dates.minDate.date) {
+          if (isBefore(this.dayPickerPanelDate,this.dates.minDate.date)) return
         } else if (isSameDay(this.walls.min,this.dayPickerPanelDate)) return
       } else if (dir === 'right') {
-        if (this.computedMaxDate) {
-          if (isAfter(addMonths(this.dayPickerPanelDate,1),this.computedMaxDate)) return
+        if (this.dates.maxDate.date) {
+          if (isAfter(addMonths(this.dayPickerPanelDate,1),this.dates.maxDate.date)) return
         } else if (isAfter(addMonths(this.dayPickerPanelDate,2), this.walls.max)) return
       }
       this.dayPickerMove = dir
     },
     dayStyles(date) {
-      const isBeforeMinDay = this.computedMinDate ? isBefore(date, this.computedMinDate) : false
+      const isBeforeMinDay = this.dates.minDate.date ? isBefore(date, this.dates.minDate.date) : false
       const isBeforeMinWall = isBefore(date,this.walls.min)
-      const isAfterMaxDay = this.computedMaxDate ? isAfter(date, this.computedMaxDate) : false
+      const isAfterMaxDay = this.dates.maxDate.date ? isAfter(date, this.dates.maxDate.date) : false
       const isAfterMaxWall = isAfter(date,this.walls.max)
       const isDisabledDay = this.disabledDays.length
         ? this.disabledDays.some((val) => isSameDay(date, this.getDateFromString(val)))
@@ -343,12 +343,12 @@ export default {
     monthPickerMoveClick(dir) {
       const monthPickerPanelBeginning = new Date(this.dates.monthPickerPanel.year,0)
       if (dir === 'left') {
-        if (this.computedMinDate) {
-          if (isBefore(this.monthPickerPanelDate,this.computedMinDate)) return
+        if (this.dates.minDate.date) {
+          if (isBefore(this.monthPickerPanelDate,this.dates.minDate.date)) return
         } else if (isSameDay(monthPickerPanelBeginning,this.walls.min)) return
       } else if (dir === 'right') {
-        if (this.computedMaxDate) {
-          if (isAfter(addMonths(this.monthPickerPanelDate,1),this.computedMaxDate)) return
+        if (this.dates.maxDate.date) {
+          if (isAfter(addMonths(this.monthPickerPanelDate,1),this.dates.maxDate.date)) return
         } else if (isAfter(addMonths(monthPickerPanelBeginning,1),this.walls.max)) return
       }
       this.monthPickerMove = dir
@@ -357,9 +357,9 @@ export default {
       let monthDate = new Date(year,monthIndex)
       let lastDayMonthDate = addDays(monthDate,getDaysInMonth(monthDate)-1)
       
-      const isBeforeMinDay = this.computedMinDate ? isBefore(lastDayMonthDate, this.computedMinDate) : false
+      const isBeforeMinDay = this.dates.minDate.date ? isBefore(lastDayMonthDate, this.dates.minDate.date) : false
       const isBeforeMinWall = isBefore(monthDate,this.walls.min)
-      const isAfterMaxDay = this.computedMaxDate ? isAfter(monthDate, this.computedMaxDate) : false
+      const isAfterMaxDay = this.dates.maxDate.date ? isAfter(monthDate, this.dates.maxDate.date) : false
       const isAfterMaxWall = isAfter(monthDate,this.walls.max)
       return {
         'datepicker__monthpicker__month--current' : monthIndex === this.dates.dayPickerPanel.month && year === this.dates.dayPickerPanel.year,
@@ -375,20 +375,20 @@ export default {
     },
     yearPickerMoveClick(dir) {
       if (dir === 'left') {
-        if(this.computedMinDate) {
+        if(this.dates.minDate.date) {
           if (this.dates.minDate.year > this.yearPickerPanelYear) return
         } else if (this.dates.walls.min.year >= this.yearPickerPanelYear) return
       } else if (dir === 'right') {
-        if (this.computedMaxDate){
+        if (this.dates.maxDate.date){
           if (this.dates.maxDate.year < this.yearPickerPanelYear +20) return
         } else if (this.dates.walls.max.year <= this.yearPickerPanelYear +20) return
       }
       this.yearpickerMove = dir
     },
     yearStyles(year){
-      const isBeforeMinDay = this.computedMinDate ? year < this.dates.minDate.year : false
+      const isBeforeMinDay = this.dates.minDate.date ? year < this.dates.minDate.year : false
       const isBeforeMinWall = year < getYear(this.walls.min)
-      const isAfterMaxDay = this.computedMaxDate ? year > this.dates.maxDate.year : false
+      const isAfterMaxDay = this.dates.maxDate.date ? year > this.dates.maxDate.year : false
       const isAfterMaxWall = year > getYear(this.walls.max)
       return {
         'datepicker__yearpicker__year--current' : year === this.dates.dayPickerPanel.year,
@@ -502,18 +502,6 @@ export default {
     }
   },
   computed: {
-    computedDateOneString() {
-      return this.selectionDateOne ? format(this.selectionDateOne, 'mm-dd-yyyy') : 'mm-dd-yyyy'
-    },
-    computedDateTwoString() {
-      return this.selectionDateTwo ? format(this.selectionDateTwo, 'mm-dd-yyyy') : 'mm-dd-yyyy'
-    },
-    computedMinDate() {
-      return this.minDate != '' ? this.getDateFromString(this.minDate) : false
-    },
-    computedMaxDate() {
-      return this.maxDate != '' ? this.getDateFromString(this.maxDate) : false
-    },
     dates() {
       return {
         today:{
@@ -521,12 +509,34 @@ export default {
           month: getMonth(this.today)
         },
         dateOne: {
-          year: this.dateOne ? getYear(parseISO(this.dateOne)) : false,
-          month: this.dateOne ? getMonth(parseISO(this.dateOne)) : false
+          year: this.selectionDateOne 
+            ? getYear(this.selectionDateOne)
+            : this.dateOne 
+              ? getYear(parseISO(this.dateOne)) 
+              : false,
+          month: this.selectionDateOne
+            ? getMonth(this.selectionDateOne)
+            : this.dateOne 
+              ? getMonth(parseISO(this.dateOne)) 
+              : false,
+          string: this.selectionDateOne 
+            ? format(this.selectionDateOne, 'mm-dd-yyyy') 
+            : 'mm-dd-yyyy'
         },
         dateTwo: {
-          year: this.dateTwo ? getYear(parseISO(this.dateTwo)) : false,
-          month: this.dateTwo ? getMonth(parseISO(this.dateTwo)) : false
+          year: this.selectionDateTwo
+            ? getYear(this.selectionDateTwo)
+            : this.dateTwo 
+              ? getYear(parseISO(this.dateTwo)) 
+              : false,
+          month: this.selectionDateTwo
+            ? getMonth(this.selectionDateTwo)
+            : this.dateTwo 
+              ? getMonth(parseISO(this.dateTwo)) 
+              : false,
+          string: this.selectionDateTwo 
+            ? format(this.selectionDateTwo, 'mm-dd-yyyy') 
+            : 'mm-dd-yyyy'
         },
         dayPickerPanel:{
           year: getYear(this.dayPickerPanelDate),
@@ -536,12 +546,18 @@ export default {
           year: getYear(this.monthPickerPanelDate),
           month: getMonth(this.monthPickerPanelDate)
         },
-        minDate:{
-          year: this.computedMinDate ? getYear(this.computedMinDate) : false,
-        },
-        maxDate:{
-          year: this.computedMaxDate ? getYear(this.computedMaxDate) : false,
-        },
+        minDate: this.minDate != ''
+          ? {
+            year: getYear(this.getDateFromString(this.minDate)),
+            date: this.getDateFromString(this.minDate)
+          }
+          : false,
+        maxDate: this.maxDate != ''
+          ? {
+            year: getYear(this.getDateFromString(this.maxDate)),
+            date: this.getDateFromString(this.maxDate)
+          }
+          : false,
         walls: {
           min:{
             year: getYear(this.walls.min),
@@ -639,11 +655,13 @@ button
 .datepicker--open
   opacity: 1
   pointer-events: initial
+  z-index: 10000
 
 .datepicker--block
   @extend .datepicker--open
   width: fit-content
   position: relative
+  z-index: auto
 
 .datepicker__responsive-header
   display: none
@@ -973,7 +991,7 @@ button
     max-width: $component-width
 
 @media screen and (max-width: 450px)
-  .datepicker
+  .datepicker:not(.datepicker--block)
     max-width: initial
     position: fixed
     right: 0
