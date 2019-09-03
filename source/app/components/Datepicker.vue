@@ -36,7 +36,7 @@
               button.datepicker__daypicker__day(
                 v-for="day in month.days"
                 :class="dayStyles(day.date)",
-                @click="() => dayClick(day.date)"
+                @click="dayClick(day.date)"
                 @mouseover="selectionCount == 2 ? dayHover(day.date) : false"
                 :key="`day-${month.month}-${day.number}-${month.year}`"
               ) 
@@ -76,13 +76,20 @@
             .datepicker__monthpicker__content
               button.datepicker__monthpicker__month(
                 v-for="(month,index) in monthsShort"
-                @click="() => monthClick(index,year)"
+                @click="monthClick(index,year)"
                 :class="monthStyles(index,year)"
                 :key="`month-${month}`"
               )
                 span {{month}}
-                span.datepicker__monthpicker__dateone Start: {{dates.dateOne.string}}
-                span.datepicker__monthpicker__datetwo End: {{dates.dateTwo.string}}
+                .datepicker__monthpicker__dateone(
+                  v-if="index === dates.dateOne.month && year === dates.dateOne.year"
+                )
+                  span Start: {{dates.dateOne.string}}
+
+                .datepicker__monthpicker__datetwo(
+                  v-if="index === dates.dateTwo.month && year === dates.dateTwo.year"
+                )
+                  span End: {{dates.dateTwo.string}}
         
         button.datepicker__controls__prev(@click="monthPickerMoveClick('left')")
         button.datepicker__controls__next(@click="monthPickerMoveClick('right')")
@@ -105,12 +112,18 @@
               button.datepicker__yearpicker__year(
                 v-for="num in 20"
                 :class="yearStyles(decade + num -1)"
-                @click="() => yearClick(decade + num -1)"
+                @click="yearClick(decade + num -1)"
                 :key="`year-${decade + num -1}`"
               ) 
                 span {{decade + num -1}}
-                span.datepicker__yearpicker__dateone Start: {{dates.dateOne.string}}
-                span.datepicker__yearpicker__datetwo End: {{dates.dateTwo.string}}
+                .datepicker__yearpicker__dateone(
+                  v-if="(decade + num -1) === dates.dateOne.year"
+                )
+                  span Start: {{dates.dateOne.string}}
+                .datepicker__yearpicker__datetwo(
+                  v-if="(decade + num -1) === dates.dateTwo.year"
+                )
+                  span End: {{dates.dateTwo.string}}
 
         button.datepicker__controls__prev(@click="yearPickerMoveClick('left')")
         button.datepicker__controls__next(@click="yearPickerMoveClick('right')")
@@ -240,6 +253,7 @@ export default {
     this.removeAllListeners()
   },
   methods: {
+    // @CLICK METHODS
     applyClick() {
       this.close()
     },
@@ -247,10 +261,6 @@ export default {
       // revert the changes
       this.updatePropDates(this.initialDateOne, this.initialDateTwo)
       this.close()
-    },
-    updatePropDates(dateOne, dateTwo) {
-      this.$emit('update:dateOne', dateOne ? format(dateOne, 'mm-dd-yyyy') : '')
-      this.$emit('update:dateTwo', dateTwo ? format(dateTwo, 'mm-dd-yyyy') : '')
     },
     outsideClick(event) {
       if (this.$refs.datepicker.contains(event.target)) return
@@ -261,7 +271,33 @@ export default {
       }
       this.close()
     },
+    daypickerMoveClick(dir) {
+      if (dir === 'left') {
+        if (this.dates.minDate.date) {
+          if (isBefore(this.dayPickerPanelDate,this.dates.minDate.date)) return
+        } else if (isSameDay(this.walls.min,this.dayPickerPanelDate)) return
+      } else if (dir === 'right') {
+        if (this.dates.maxDate.date) {
+          if (isAfter(addMonths(this.dayPickerPanelDate,1),this.dates.maxDate.date)) return
+        } else if (isAfter(addMonths(this.dayPickerPanelDate,2), this.walls.max)) return
+      }
+      this.dayPickerMove = dir
+    },
+    todayClick(){
+      this.monthPickerOpen = false
+      this.yearPickerOpen = false
+      // create the current calendar and monthpicker panel date
+      this.dayPickerPanelDate = new Date(this.dates.today.year, this.dates.today.month)
+      this.monthPickerPanelDate = this.dayPickerPanelDate
+      // get the closest decade minus 10
+      this.yearPickerPanelYear = Math.round(this.dates.today.year / 10) *10 -10
+    },
+
+
+    // DAYS METHODS
     dayClick(date) {
+      console.log(date);
+      
       if (this.selectionCount === 1) {
         this.selectionDateOne = date
         this.selectionDateTwo = null
@@ -303,18 +339,6 @@ export default {
         this.hoverDateTwo = date
       }
     },
-    daypickerMoveClick(dir) {
-      if (dir === 'left') {
-        if (this.dates.minDate.date) {
-          if (isBefore(this.dayPickerPanelDate,this.dates.minDate.date)) return
-        } else if (isSameDay(this.walls.min,this.dayPickerPanelDate)) return
-      } else if (dir === 'right') {
-        if (this.dates.maxDate.date) {
-          if (isAfter(addMonths(this.dayPickerPanelDate,1),this.dates.maxDate.date)) return
-        } else if (isAfter(addMonths(this.dayPickerPanelDate,2), this.walls.max)) return
-      }
-      this.dayPickerMove = dir
-    },
     dayStyles(date) {
       const isBeforeMinDay = this.dates.minDate.date ? isBefore(date, this.dates.minDate.date) : false
       const isBeforeMinWall = isBefore(date,this.walls.min)
@@ -335,10 +359,12 @@ export default {
         'datepicker__daypicker__day--disabled': isBeforeMinDay || isAfterMaxDay || isDisabledDay || isBeforeMinWall || isAfterMaxWall 
       }
     },
+
+    // MONTH METHODS
     monthClick(monthIndex,year) {
-      this.dayPickerPanelDate = new Date(year, monthIndex)
       this.monthPickerOpen = false
       this.monthPickerPanelDate = this.dayPickerPanelDate
+      this.dayPickerPanelDate = new Date(year, monthIndex)
     },
     monthPickerMoveClick(dir) {
       const monthPickerPanelBeginning = new Date(this.dates.monthPickerPanel.year,0)
@@ -363,15 +389,15 @@ export default {
       const isAfterMaxWall = isAfter(monthDate,this.walls.max)
       return {
         'datepicker__monthpicker__month--current' : monthIndex === this.dates.dayPickerPanel.month && year === this.dates.dayPickerPanel.year,
-        'datepicker__monthpicker__month--dateone' : monthIndex === this.dates.dateOne.month && year === this.dates.dateOne.year,
-        'datepicker__monthpicker__month--datetwo' : monthIndex === this.dates.dateTwo.month && year === this.dates.dateTwo.year,
         'datepicker__monthpicker__month--disabled' : isBeforeMinDay || isAfterMaxDay || isBeforeMinWall || isAfterMaxWall
       }
     },
+
+    // YEAR METHODS
     yearClick(year) {
-      this.dayPickerPanelDate = new Date(year, this.dates.dayPickerPanel.month)
-      this.monthPickerPanelDate = this.dayPickerPanelDate
       this.yearPickerOpen = false
+      // this.dayPickerPanelDate = new Date(year, this.dates.dayPickerPanel.month)
+      this.monthPickerPanelDate = new Date(year, this.dates.dayPickerPanel.month)
     },
     yearPickerMoveClick(dir) {
       if (dir === 'left') {
@@ -392,43 +418,11 @@ export default {
       const isAfterMaxWall = year > getYear(this.walls.max)
       return {
         'datepicker__yearpicker__year--current' : year === this.dates.dayPickerPanel.year,
-        'datepicker__yearpicker__year--dateone' : year === this.dates.dateOne.year,
-        'datepicker__yearpicker__year--datetwo' : year === this.dates.dateTwo.year,
         'datepicker__yearpicker__year--disabled' : isBeforeMinDay || isAfterMaxDay || isBeforeMinWall || isAfterMaxWall
       }
     },
-    todayClick(){
-      this.monthPickerOpen = false
-      this.yearPickerOpen = false
-      // create the current calendar and monthpicker panel date
-      this.dayPickerPanelDate = new Date(this.dates.today.year, this.dates.today.month)
-      this.monthPickerPanelDate = this.dayPickerPanelDate
-      // get the closest decade minus 10
-      this.yearPickerPanelYear = Math.round(this.dates.today.year / 10) *10 -10
-    },
-    openDatepickerActions(val){
-      if (val) {
-        // load the dates from the props to the internal selection
-        this.selectionDateOne = this.dateOne !== '' ? this.getDateFromString(this.dateOne) : ''
-        this.initialDateOne = this.selectionDateOne
-        this.selectionDateTwo = this.dateTwo !== '' ? this.getDateFromString(this.dateTwo) : ''
-        this.initialDateTwo = this.selectionDateTwo
-        // event listener for the timing on the slide transition
-        this.$refs.daypicker_container.addEventListener(this.whichTransitionEvent(), this.afterCalendarTransition)
-        // event listener to detect a click outside of the component
-        if (!this.block) document.addEventListener('mousedown', this.outsideClick)
-      } else {
-        this.monthPickerOpen = false
-        this.yearPickerOpen = false
-        this.removeAllListeners()
-      }
-    },
-    removeAllListeners(){
-      this.$refs.daypicker_container.removeEventListener(this.whichTransitionEvent(), this.afterCalendarTransition)
-      this.$refs.monthpicker_container.removeEventListener(this.whichTransitionEvent(), this.afterMonthpickerTransition)
-      this.$refs.yearpicker_container.removeEventListener(this.whichTransitionEvent(), this.afterYearpickerTransition)
-      document.removeEventListener('mousedown', this.outsideClick)
-    },
+
+    // HELPER METHODS
     buildMonth(date) {
       let year = getYear(date)
       let month = getMonth(date)
@@ -448,9 +442,19 @@ export default {
         null: getDay(date)
       }
     },
+    updatePropDates(dateOne, dateTwo) {
+      this.$emit('update:dateOne', dateOne ? format(dateOne, 'MM-dd-yyyy') : '')
+      this.$emit('update:dateTwo', dateTwo ? format(dateTwo, 'MM-dd-yyyy') : '')
+    },
     getDateFromString(string) {
       let dateArr = string.split('-').map((el) => Number(el))
       return new Date(dateArr[2], dateArr[0] - 1, dateArr[1])
+    },
+    removeAllListeners(){
+      this.$refs.daypicker_container.removeEventListener(this.whichTransitionEvent(), this.afterDaypickerTransition)
+      this.$refs.monthpicker_container.removeEventListener(this.whichTransitionEvent(), this.afterMonthpickerTransition)
+      this.$refs.yearpicker_container.removeEventListener(this.whichTransitionEvent(), this.afterYearpickerTransition)
+      document.removeEventListener('mousedown', this.outsideClick)
     },
     // this method will return a cross-browser property of the transition
     whichTransitionEvent() {
@@ -466,8 +470,25 @@ export default {
         }
       }
     },
+    openDatepickerActions(val){
+      if (val) {
+        // load the dates from the props to the internal selection
+        this.selectionDateOne = this.dateOne !== '' ? this.getDateFromString(this.dateOne) : ''
+        this.initialDateOne = this.selectionDateOne
+        this.selectionDateTwo = this.dateTwo !== '' ? this.getDateFromString(this.dateTwo) : ''
+        this.initialDateTwo = this.selectionDateTwo
+        // event listener for the timing on the slide transition
+        this.$refs.daypicker_container.addEventListener(this.whichTransitionEvent(), this.afterDaypickerTransition)
+        // event listener to detect a click outside of the component
+        if (!this.block) document.addEventListener('mousedown', this.outsideClick)
+      } else {
+        this.monthPickerOpen = false
+        this.yearPickerOpen = false
+        this.removeAllListeners()
+      }
+    },
     // after the transition end the computed calendar will update
-    afterCalendarTransition(event) {
+    afterDaypickerTransition(event) {
       if (event.propertyName !== 'transform') return
       if (this.dayPickerMove === 'left') {
         this.dayPickerPanelDate = subMonths(this.dayPickerPanelDate, 1)
@@ -499,7 +520,7 @@ export default {
       this.yearPickerOpen = false
       this.hoverDateOne = undefined
       this.hoverDateTwo = undefined
-    }
+    },
   },
   computed: {
     dates() {
@@ -520,7 +541,7 @@ export default {
               ? getMonth(parseISO(this.dateOne)) 
               : false,
           string: this.selectionDateOne 
-            ? format(this.selectionDateOne, 'mm-dd-yyyy') 
+            ? format(this.selectionDateOne, 'MM-dd-yyyy') 
             : 'mm-dd-yyyy'
         },
         dateTwo: {
@@ -535,7 +556,7 @@ export default {
               ? getMonth(parseISO(this.dateTwo)) 
               : false,
           string: this.selectionDateTwo 
-            ? format(this.selectionDateTwo, 'mm-dd-yyyy') 
+            ? format(this.selectionDateTwo, 'MM-dd-yyyy') 
             : 'mm-dd-yyyy'
         },
         dayPickerPanel:{
@@ -592,15 +613,15 @@ export default {
       return calendar
     },
     monthPickerObj(){
-      let yearList = []
+      let yearL = []
       for (
         let year = this.dates.monthPickerPanel.year -1; 
         year <= this.dates.monthPickerPanel.year +2; 
         year++
       ) {
-        yearList.push(year)
+        yearL.push(year)
       }
-      return yearList
+      return yearL
     }
   }
 }
@@ -882,8 +903,20 @@ button
 
   &:hover
     border-color: $color-border
+    .datepicker__monthpicker__dateone,
+    .datepicker__monthpicker__datetwo
+      span
+        opacity: 1
 
-  &:before, &:after
+.datepicker__monthpicker__dateone,
+.datepicker__monthpicker__datetwo
+  left: 50%
+  position: absolute
+  pointer-events: none
+  transform: translate(-50%,0)
+
+  &:before
+    content: ''
     display: block
     height: 5px
     width: 5px
@@ -891,47 +924,31 @@ button
     background-color: $color-black
     position: absolute
     left: 50%
-    transform: translate(-50%,0)
+    top: 50%
+    transform: translate(-50%,-50%)
 
-.datepicker__monthpicker__dateone, 
-.datepicker__monthpicker__datetwo
-  font-size: 0.5rem
-  position: absolute
-  left: 50%
-  opacity: 0
-  pointer-events: none
-  background-color: $color-gray
-  color: white
-  padding: 3px 5px
-  white-space: nowrap
+  span
+    display: block
+    font-size: 0.6rem
+    color: white
+    padding: 3px 5px
+    background-color: $color-gray
+    white-space: nowrap
+    opacity: 0
+    position: relative
 
 .datepicker__monthpicker__dateone
-  transform: translate(-50%,-100%)
-  top: 5px
+  top: 0
+  span
+    transform: translate(0,-50%)
 
 .datepicker__monthpicker__datetwo
-  transform: translate(-50%,100%)
-  bottom: 5px
+  bottom: 0
+  span
+    transform: translate(0,50%)
 
 .datepicker__monthpicker__month--current
   background-color: $color-light-gray
-
-.datepicker__monthpicker__month--dateone
-  &:hover
-    .datepicker__monthpicker__dateone
-      opacity: 1
-
-  &:before
-    content: ""
-    top: 5px
-
-.datepicker__monthpicker__month--datetwo
-  &:hover
-    .datepicker__monthpicker__datetwo
-      opacity: 1
-  &:after
-    content: ""
-    bottom: 5px
 
 .datepicker__monthpicker__year
   @extend .datepicker__daypicker__monthyear
@@ -974,12 +991,6 @@ button
 
 .datepicker__yearpicker__datetwo
   @extend .datepicker__monthpicker__datetwo
-
-.datepicker__yearpicker__year--dateone
-  @extend .datepicker__monthpicker__month--dateone
-
-.datepicker__yearpicker__year--datetwo
-  @extend .datepicker__monthpicker__month--datetwo
 
 .datepicker__yearpicker__year--disabled
   @extend .datepicker__daypicker__day--disabled
