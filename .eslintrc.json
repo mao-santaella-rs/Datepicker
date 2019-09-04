@@ -13,7 +13,7 @@
 		"sourceType": "module"
 	},
 	"rules": {
-		"vue/order-in-components": false,
+		"vue/order-in-components": 0,
 		"linebreak-style": [
 			"error",
 			"windows"
