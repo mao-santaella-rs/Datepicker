@@ -1,0 +1,25 @@
+{
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es6": true
+  },
+  "extends": [
+		"plugin:vue/essential",
+		"plugin:prettier/recommended",
+		"eslint:recommended"
+	],
+  "parserOptions": {
+    "parser": "babel-eslint"
+  },
+  "rules": {
+    "vue/order-in-components": 0,
+    "prettier/prettier": ["error"],
+    "no-console": [
+      "error",
+      {
+        "allow": ["warn", "error"]
+      }
+    ]
+  }
+}
