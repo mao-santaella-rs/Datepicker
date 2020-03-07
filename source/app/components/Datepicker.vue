@@ -183,6 +183,7 @@ import {
   subYears,
   getMonth,
   format,
+  parse,
 } from 'date-fns'
 
 export default {
@@ -192,22 +193,27 @@ export default {
       type: Boolean,
       default: false,
     },
+    // dateOne date format have to be the same in dateFormat prop
     dateOne: {
       type: String,
       default: '',
     },
+    // dateTwo date format have to be the same in dateFormat prop
     dateTwo: {
       type: String,
       default: '',
     },
+    // minDate date format have to be the same in dateFormat prop
     minDate: {
       type: String,
       default: '',
     },
+    // maxDate date format have to be the same in dateFormat prop
     maxDate: {
       type: String,
       default: '',
     },
+    // disabledDays dates format have to be the same in dateFormat prop
     disabledDays: {
       // TODO when is in between the selection?
       type: Array,
@@ -226,6 +232,11 @@ export default {
     },
     block: Boolean,
     disableYearSelect: Boolean,
+    // date format for date-fn https://date-fns.org/v2.10.0/docs/format
+    dateFormat: {
+      type: String,
+      default: 'MM-dd-yyyy',
+    },
   },
   data() {
     return {
@@ -276,7 +287,7 @@ export default {
             : this.dateOne
             ? getMonth(this.getDateFromString(this.dateOne))
             : false,
-          string: this.selectionDateOne ? format(this.selectionDateOne, 'MM-dd-yyyy') : 'mm-dd-yyyy',
+          string: this.selectionDateOne ? format(this.selectionDateOne, 'MM/dd/yy') : 'mm/dd/yy',
         },
         dateTwo: {
           year: this.selectionDateTwo
@@ -289,7 +300,7 @@ export default {
             : this.dateTwo
             ? getMonth(this.getDateFromString(this.dateTwo))
             : false,
-          string: this.selectionDateTwo ? format(this.selectionDateTwo, 'MM-dd-yyyy') : 'mm-dd-yyyy',
+          string: this.selectionDateTwo ? format(this.selectionDateTwo, 'MM/dd/yy') : 'mm/dd/yy',
         },
         dayPickerPanel: {
           year: getYear(this.dayPickerPanelDate),
@@ -597,13 +608,12 @@ export default {
       }
     },
     updatePropDates(dateOne, dateTwo) {
-      this.$emit('update:dateOne', dateOne ? format(dateOne, 'MM-dd-yyyy') : '')
-      this.$emit('update:dateTwo', dateTwo ? format(dateTwo, 'MM-dd-yyyy') : '')
+      this.$emit('update:dateOne', dateOne ? format(dateOne, this.dateFormat) : '')
+      this.$emit('update:dateTwo', dateTwo ? format(dateTwo, this.dateFormat) : '')
     },
     getDateFromString(string) {
       if (typeof string !== 'string' || string === '') return ''
-      let dateArr = string.split('-').map(el => Number(el))
-      return new Date(dateArr[2], dateArr[0] - 1, dateArr[1])
+      return parse(string, this.dateFormat, new Date())
     },
     removeAllListeners() {
       this.$refs.daypicker_container.removeEventListener(this.whichTransitionEvent(), this.afterDaypickerTransition)
