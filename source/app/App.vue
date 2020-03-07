@@ -33,18 +33,18 @@ import Datepicker from './components/Datepicker'
 export default {
   name: 'App',
   components: {
-    Datepicker
+    Datepicker,
   },
-  data(){
-    return{
-      dates:{
+  data() {
+    return {
+      dates: {
         firstDate: '',
         lastDate: '',
       },
       panels: 2,
-      datePickerOpen: false
+      datePickerOpen: false,
     }
-  }
+  },
 }
 </script>
 
