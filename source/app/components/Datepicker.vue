@@ -366,8 +366,14 @@ export default {
     },
   },
   watch: {
-    open(val) {
-      this.openDatepickerActions(val)
+    open(newVal) {
+      if (newVal) {
+        this.openDatepickerActions()
+      } else {
+        this.monthPickerOpen = false
+        this.yearPickerOpen = false
+        this.removeAllListeners()
+      }
     },
     monthPickerOpen(val) {
       if (val) {
@@ -391,7 +397,7 @@ export default {
     // create the today date
     this.today = new Date()
     this.todayClick()
-    this.openDatepickerActions(this.block)
+    this.openDatepickerActions()
   },
   beforeDestroy() {
     // remove all listeners
@@ -637,22 +643,16 @@ export default {
         }
       }
     },
-    openDatepickerActions(val) {
-      if (val) {
-        // load the dates from the props to the internal selection
-        this.selectionDateOne = this.getDateFromString(this.dateOne)
-        this.initialDateOne = this.selectionDateOne
-        this.selectionDateTwo = this.getDateFromString(this.dateTwo)
-        this.initialDateTwo = this.selectionDateTwo
-        // event listener for the timing on the slide transition
-        this.$refs.daypicker_container.addEventListener(this.whichTransitionEvent(), this.afterDaypickerTransition)
-        // event listener to detect a click outside of the component
-        if (!this.block) document.addEventListener('mousedown', this.outsideClick)
-      } else {
-        this.monthPickerOpen = false
-        this.yearPickerOpen = false
-        this.removeAllListeners()
-      }
+    openDatepickerActions() {
+      // load the dates from the props to the internal selection
+      this.selectionDateOne = this.getDateFromString(this.dateOne)
+      this.initialDateOne = this.selectionDateOne
+      this.selectionDateTwo = this.getDateFromString(this.dateTwo)
+      this.initialDateTwo = this.selectionDateTwo
+      // event listener for the timing on the slide transition
+      this.$refs.daypicker_container.addEventListener(this.whichTransitionEvent(), this.afterDaypickerTransition)
+      // event listener to detect a click outside of the component
+      if (!this.block) document.addEventListener('mousedown', this.outsideClick)
     },
     // after the transition end the computed calendar will update
     afterDaypickerTransition(event) {
