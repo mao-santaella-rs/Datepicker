@@ -24,7 +24,7 @@
     "gulp": "^4.0.0",
     "gulp-plumber": "^1.2.1",
     "node-sass": "^4.11.0",
-    "pug": "^2.0.3",
+    "pug": "^3.0.1",
     "pug-plain-loader": "^1.0.0",
     "sass-loader": "^7.3.1",
     "vue": "^2.6.6",
